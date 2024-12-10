@@ -1,0 +1,43 @@
+/* The side navigation menu */
+.sidebar {
+  margin: 0;
+  padding: 0;
+  width: 200px;
+  background-color: #f1f1f1;
+  position: fixed;
+  height: 100%;
+  overflow: auto;
+}
+
+/* Sidebar links */
+.sidebar a {
+  display: block;
+  color: black;
+  padding: 16px;
+  text-decoration: none;
+}
+
+/* Active/current link */
+.sidebar a.active {
+  background-color: #04AA6D;
+  color: white;
+}
+
+/* Links on mouse-over */
+.sidebar a:hover:not(.active) {
+  background-color: #555;
+  color: white;
+}
+
+/* Page content */
+.content {
+  margin-left: 200px; /* Match the width of the sidebar */
+  padding: 20px;
+  min-height: 1000px; /* Ensures content area extends vertically */
+}
+
+/* PDF container */
+.pdf-viewer {
+  width: 100%;
+  height: 600px;
+}
