@@ -30,6 +30,54 @@ function renderPDF(pdfUrl) {
   });
 }
 
+function addAlgorithm() {
+    console.log("algorithm button pressed");
+
+    let newAlgorithm = document.createElement("div");
+    newAlgorithm.classList.add("algorithm");
+
+    let nameInputBox = document.createElement("div");
+    let nameLabel = document.createTextNode("Name: ");
+    let nameInput = document.createElement("input");
+    nameInputBox.classList.add("name-input-box");
+    nameInput.type = "text";
+
+    let colorInputBox = document.createElement("div");
+    let colorLabel = document.createTextNode("Color: ");
+    let colorInput = document.createElement("input");
+    colorInputBox.classList.add("color-input-box");
+    colorInput.type = "color";
+    colorInput.classList.add("color-picker");
+
+    let chooseFileBox = document.createElement("div");
+    let chooseFile = document.createElement("input");
+    chooseFileBox.classList.add("choose-file-box");
+    chooseFile.type = "file";
+    chooseFile.accept = ".txt, .csv";
+
+    let removeButtonBox = document.createElement("div");
+    let removeButton = document.createElement("button");
+    removeButtonBox.classList.add("remove-button-box");
+    removeButton.innerText = "Remove";
+    removeButton.classList.add("remove-button");
+    removeButton.onclick = function() {
+        newAlgorithm.remove();
+    };
+
+    nameInputBox.appendChild(nameLabel);
+    nameInputBox.appendChild(nameInput);
+    colorInputBox.appendChild(colorLabel);
+    colorInputBox.appendChild(colorInput);
+    chooseFileBox.appendChild(chooseFile);
+    removeButtonBox.appendChild(removeButton);
+
+    newAlgorithm.appendChild(nameInputBox);
+    newAlgorithm.appendChild(colorInputBox);
+    newAlgorithm.appendChild(chooseFileBox);
+    newAlgorithm.appendChild(removeButtonBox);
+    document.getElementById("container").appendChild(newAlgorithm);
+}
+
 
 // Render the PDF after the page loads
 window.onload = function () {

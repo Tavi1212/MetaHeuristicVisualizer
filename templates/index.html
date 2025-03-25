@@ -19,21 +19,26 @@
           <div>
             <form class="problemtype">
               <label for="01">Minimization</label>
-              <input id="01" type="radio" name="r" value="1" checked>
+              <input id="01" type="radio" name="objective" value="1" checked>
               <label for="02">Maximization</label>
-              <input id="02" type="radio" name="r" value="2">
+              <input id="02" type="radio" name="objective" value="2">
             </form>
           </div>
 
           <div>
             <form class="problemtype">
               <label for="04">Discrete</label>
-              <input id="04" type="radio" name="r" value="1" checked>
+              <input id="04" type="radio" name="domain" value="1" checked>
               <label for="05">Continous</label>
-              <input id="05" type="radio" name="r" value="2">
+              <input id="05" type="radio" name="domain" value="2">
             </form>
           </div>
         </div>
+
+        <!-- New Algorithm Selection -->
+        <h2>Algorithms</h2>
+        <div class="container" id="container"></div>
+        <button onclick="addAlgorithm()">Add Algorithm</button>
 
         <form method="post" enctype="multipart/form-data" action="/" >
           <input type="file" name="inputfile" id="file" class="inputfile">
@@ -43,14 +48,13 @@
       </div>
 
       <div class="content">
-        <a href="static/pdf/plot.pdf" download="plot.pdf" class="download-link"
-        >
-          Download url
-        </a>
         <!-- Container for rendering the PDF -->
         <div id="pdf-viewer-container">
           <canvas id="pdf-canvas" style="border: none;"></canvas>
         </div>
+        <a href="static/pdf/plot.pdf" download="plot.pdf" class="download-link">
+          Download url
+        </a>
       </div>
 
     </div>

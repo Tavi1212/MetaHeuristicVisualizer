@@ -14,7 +14,7 @@ def index():
             pdf = True  # Set the variable to display the PDF
         if request.form.get('action') == "select_file":
             userFile = request.files["inputfile"]
-            createSTN("input/DE_Rana_3D.txt")
+            createSTN(userFile)
             pdf = True
 
 

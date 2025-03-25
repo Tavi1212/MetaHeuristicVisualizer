@@ -5,9 +5,12 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
+import seaborn as sns
 from networkx.classes import DiGraph
 
 def createSTN(infile):
+    sns.set_theme(style="white")
+
     df = pd.read_table(infile, sep=r"\s+")
     nruns = df["Run"].iloc[-1]
 
@@ -58,11 +61,13 @@ def createSTN(infile):
             zip(edges[["Start", "End"]].itertuples(index=False, name=None), edges["weight"])), name="weight")
     pos = nx.spring_layout(G, weight="weight")
 
-    #------------LESGOOOOOOOOOOOOOOOO---------
+    #------------Node shapes---------
+    pos = nx.spring_layout(G, weight="weight", )
+
     node_shapes = {
-        "s" : [],
-        "d" : [],
-        "o" : []
+        "s" : [], #Start nodes as squares
+        "d" : [], #End nodes as diamonds
+        "o" : []  #Intermediary nodes as circles
     }
 
     node_list = nodes["node"].tolist()
@@ -76,25 +81,27 @@ def createSTN(infile):
             node_shapes["o"].append(node_id)
 
     shape_colors = {
-        "s" : '#f59505',
-        "d" : '#f50505',
-        "o" : '#787878'
+        "s" : '#f59505', #Start nodes as orange
+        "d" : '#f50505', #End nodes as red
+        "o" : '#787878'  #Intermediary nodes as grey
     }
     #-----------------------------------------
 
     #------HAI SA INCERCAM O PRINTARE---------
+    plt.figure(figsize=(20, 20))
     nx.draw_networkx_edges(G, pos, arrows=True)
     for shape, noduri in node_shapes.items():
         nx.draw_networkx_nodes(
             G,
             pos,
-            nodelist = noduri,
+            nodelist   = noduri,
             node_shape = shape,
             node_color = shape_colors[shape]
         )
+
     plt.savefig("static/pdf/plot.pdf")
+    plt.cla()
     #plt.axis("off")
-    #plt.show()
     #-----------------------------------------
 
     #------------TO DELETE LATER--------------

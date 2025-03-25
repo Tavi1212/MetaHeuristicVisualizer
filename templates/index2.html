@@ -1,12 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Document</title>
-  </head>
-  <body>
-    <p>alo alo</p>
-  </body>
+    <title>Dynamic Divs with Flask & Jinja</title>
+    <style>
+        .container {
+            margin-top: 20px;
+        }
+        .box {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: lightgray;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+        .remove-btn {
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+
+    <button onclick="addDiv()">Add Div</button>
+    <div class="container" id="container"></div>
+
+    <script>
+        function addDiv() {
+            let newDiv = document.createElement("div");
+            newDiv.classList.add("box");
+            newDiv.innerHTML = "This is a new div ";
+
+            let removeButton = document.createElement("button");
+            removeButton.innerText = "Remove";
+            removeButton.classList.add("remove-btn");
+            removeButton.onclick = function() {
+                newDiv.remove();
+            };
+
+            newDiv.appendChild(removeButton);
+            document.getElementById("container").appendChild(newDiv);
+        }
+    </script>
+
+</body>
 </html>
