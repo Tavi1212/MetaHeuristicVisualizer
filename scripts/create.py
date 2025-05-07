@@ -6,6 +6,7 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 import seaborn as sns
+from pyvis.network import Network
 from networkx.classes import DiGraph
 
 def createSTN(infile):
@@ -88,7 +89,7 @@ def createSTN(infile):
     #-----------------------------------------
 
     #------HAI SA INCERCAM O PRINTARE---------
-    plt.figure(figsize=(20, 20))
+    plt.figure(figsize=(30, 30))
     nx.draw_networkx_edges(G, pos, arrows=True)
     for shape, noduri in node_shapes.items():
         nx.draw_networkx_nodes(

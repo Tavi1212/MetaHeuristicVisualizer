@@ -1,64 +1,164 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <title>Metaheuristic Visualizer</title>
-  </head>
-  <body>
+</head>
+
+<body>
     <div class="topbar">
-      <h1>Metaheuristic Visualizer</h1>
+        <h1>Metaheuristic Visualizer</h1>
     </div>
 
     <div class="main">
-      <div class="sidebar">
-        <h1>Configuration</h1>
-        <div class="formulare">
-          <div>
-            <form class="problemtype">
-              <label for="01">Minimization</label>
-              <input id="01" type="radio" name="objective" value="1" checked>
-              <label for="02">Maximization</label>
-              <input id="02" type="radio" name="objective" value="2">
-            </form>
-          </div>
+        <div class="sidebar">
+            <h1>Configuration</h1>
 
-          <div>
-            <form class="problemtype">
-              <label for="04">Discrete</label>
-              <input id="04" type="radio" name="domain" value="1" checked>
-              <label for="05">Continous</label>
-              <input id="05" type="radio" name="domain" value="2">
+            <form id="config-form" method="POST" action="/submit">
+                <div class="config-sidebar">
+                    <div class="options-text-box" style="justify-content: center;">Problem type</div>
+
+                    <div style="display: flex; ">
+                        <div class="rect-container" , style="display: flex; gap: 0;">
+                            <input type="radio" name="choice" id="minimization-btn" class="rect-input" checked />
+                            <label for="minimization-btn" class="rect-label upperlabel">Minimization</label>
+
+                            <input type="radio" name="choice" id="maximization-btn" class="rect-input" />
+                            <label for="maximization-btn" class="rect-label underlabel">Maximization</label>
+                        </div>
+                        <div class="rect-container" style="display: flex; gap: 0;">
+                            <input type="radio" name="choice2" id="discrete-btn" class="rect-input" checked />
+                            <label for="discrete-btn" class="rect-label upperlabel">Discrete</label>
+
+                            <input type="radio" name="choice2" id="continuous-btn" class="rect-input" />
+                            <label for="continuous-btn" class="rect-label underlabel">Continuous</label>
+                        </div>
+                    </div>
+
+                    <div style="margin-left: 10px;">Partitioning Strategy</div>
+
+                    <div id="discrete-opt">
+                        <input type="radio" name="choice3" id="shannon-entropy-btn" class="rect-input" checked />
+                        <label for="shannon-entropy-btn" class="rect-label">Shannon Entropy</label>
+
+                        <input type="radio" name="choice3" id="discrete-clustering-btn" class="rect-input" />
+                        <label for="discrete-clustering-btn" class="rect-label">Aglomerative clustering</label>
+                    </div>
+
+                    <div id="continuous-opt" style="display: none;">
+                        <input type="radio" name="choice4" id="standard-partitioning-btn" class="rect-input" checked />
+                        <label for="standard-partitioning-btn" class="rect-label">Standard partitioning</label>
+
+                        <input type="radio" name="choice4" id="continuous-clustering-btn" class="rect-input" />
+                        <label for="continuous-clustering-btn" class="rect-label">Aglomerative clustering</label>
+                    </div>
+
+                    <div id="discrete-shannon-opt">
+                        <label for="disc-partitioning">Partitioning:</label>
+                        <input type="number" id="disc-partitioning" name="disc_partitioning">
+                    </div>
+                    <div id="discrete-clustering-opt" style="display: none;">
+                        <div>
+                            <label for="cluster-size">Cluster Size:</label>
+                            <input type="number" id="disc-cluster-size" name="disc_cluster_size">
+                        </div>
+                        <div>
+                            <label for="disc-partitioning">Volume Size</label>
+                            <input type="number" id="disc-partitioning" name="disc_partitioning">
+                        </div>
+                        <div>
+                            <label for="distance-metric">Distance:</label>
+                            <select id="distance-metric" name="distance_metric">
+                                <option value="hamming">Hamming</option>
+                                <option value="euclidean">Euclidean</option>
+                                <option value="manhattan">Manhattan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="continuous-std-opt" style="display: none;">
+                        <div>
+                            <label for="min-bound">Min Bound:</label>
+                            <input type="number" id="min-bound" name="min_bound">
+                        </div>
+                        <div>
+                            <label for="max-bound">Max Bound:</label>
+                            <input type="number" id="max-bound" name="max_bound">
+                        </div>
+                        <div>
+                            <label for="n-dimensions">N Dimensions:</label>
+                            <input type="number" id="n-dimensions" name="n_dimensions">
+                        </div>
+                        <div>
+                            <label for="hypercube">Hypercube:</label>
+                            <input type="number" id="hypercube" name="hyper_cube">
+                        </div>
+                    </div>
+                    <div id="continuous-clustering-opt" style="display: none;">
+                        <div>
+                            <label for="cluster-size">Cluster Size:</label>
+                            <input type="number" id="cont-cluster-size" name="cont_cluster_size" min="1" step="1">
+                        </div>
+                        <div>
+                            <label for="cont-volume-size">Cluster Size:</label>
+                            <input type="number" id="cont-volume-size" name="cont_volume_size" min="1" step="1">
+                        </div>
+                        <div>
+                            <label for="distance-metric">Distance:</label>
+                            <select id="distance-metric" name="distance_metric">
+                                <option value="hamming">Hamming</option>
+                                <option value="euclidean">Euclidean</option>
+                                <option value="manhattan">Manhattan</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <details class="collapsible-menu">
+                        <summary>Advanced Options</summary>
+                        <div class="collapsible-content">
+                            <div>Best known solution</div>
+                            <div>Number of runs</div>
+                            <div>Vertex size</div>
+                            <div>Arrow size</div>
+                            <div>Tree layout</div>
+                        </div>
+                    </details>
+
+                    <button type="submit">Submit</button>
+                </div>
+
             </form>
-          </div>
+
+            <!-- New Algorithm Selection -->
+            <h2>Algorithms</h2>
+            <div class="container" id="container"></div>
+            <button onclick="addAlgorithm()">Add Algorithm</button>
+            <button onclick="logAlgorithmDetails()">Log</button>
+
+            <form class="generate-form" method="post" enctype="multipart/form-data" action="/">
+                <input type="file" name="inputfile" id="file" class="inputfile">
+                <label for="file">Choose an input file</label>
+                <button type="submit" value="select_file" name="action">Generate pdf</button>
+            </form>
         </div>
 
-        <!-- New Algorithm Selection -->
-        <h2>Algorithms</h2>
-        <div class="container" id="container"></div>
-        <button onclick="addAlgorithm()">Add Algorithm</button>
-
-        <form method="post" enctype="multipart/form-data" action="/" >
-          <input type="file" name="inputfile" id="file" class="inputfile">
-          <label for="file">Choose an input file</label>
-          <button type="submit" value="select_file" name="action">Generate pdf</button>
-        </form>
-      </div>
-
-      <div class="content">
-        <!-- Container for rendering the PDF -->
-        <div id="pdf-viewer-container">
-          <canvas id="pdf-canvas" style="border: none;"></canvas>
+        <div class="content">
+            <!-- Container for rendering the PDF -->
+            <div id="pdf-viewer-container">
+                <canvas id="pdf-canvas" style="border: none;"></canvas>
+            </div>
+            <a href="static/pdf/plot.pdf" download="plot.pdf" class="download-link">
+                Download url
+            </a>
         </div>
-        <a href="static/pdf/plot.pdf" download="plot.pdf" class="download-link">
-          Download url
-        </a>
-      </div>
 
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
     <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-  </body>
+</body>
+
 </html>

@@ -236,3 +236,175 @@ grid-template-columns: auto 1fr;
     transform: scale(1,1)
   }
 }
+
+.switch {
+  display: inline-block;
+  height: 34px;
+  position: relative;
+  width: 60px;
+}
+
+.switch input {
+  display:none;
+}
+
+.slider {
+  background-color: #ccc;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  transition: .4s;
+}
+
+.slider:before {
+  background-color: #fff;
+  bottom: 4px;
+  content: "";
+  height: 26px;
+  left: 4px;
+  position: absolute;
+  transition: .4s;
+  width: 26px;
+}
+
+input:checked + .slider {
+  background-color: #66bb6a;
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.slider.round {
+  border-radius: 34px;
+}
+
+.slider.round:before {
+  border-radius: 50%;
+}
+
+.options-text-box {
+    display: flex;
+    align-items: center;
+    height: 40px;
+}
+
+.config-sidebar {
+    background-color: aquamarine;
+    width: 400px;
+
+}
+
+.rect-container {
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+    align-items: center;
+    gap: 20px;
+}
+
+.rect-input {
+    display: none;
+}
+
+.rect-label {
+    width: 130px;
+    height: 40px;
+    background-color: #ccc;
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    user-select: none;
+}
+
+
+.rect-input:checked+.rect-label {
+    background-color: #4CAF50;
+    color: white;
+}
+
+
+.rect-label:hover {
+    background-color: #bbb;
+}
+
+.upperlabel {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.underlabel {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
+}
+
+.collapsible-menu {
+    width: 90%;
+    margin-left: 8px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    font-family: sans-serif;
+}
+
+.collapsible-menu summary {
+    cursor: pointer;
+    padding: 12px 16px;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-bottom: 1px solid #ddd;
+    user-select: none;
+}
+
+.collapsible-menu[open] summary {
+    border-bottom: 1px solid transparent;
+}
+
+.collapsible-content {
+    padding: 16px;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.partition-radio {
+    display: none;
+}
+
+.partition-label {
+    margin: 5px;
+    padding: 5px 10px;
+    background-color: #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+    display: inline-block;
+}
+
+.partition-radio:checked+.partition-label {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.generate-form {
+    margin-bottom: 20px;
+}
