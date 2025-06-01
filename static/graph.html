@@ -1,0 +1,285 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 600px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 100%;
+                 height: 600px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#f5e642", "id": "000000300000001c00000019", "label": " ", "shape": "square", "size": 14, "title": "ID: 000000300000001c00000019\nFitness: 653.1745"}, {"color": "#4be97f", "id": "ffffffd700000022ffffffce", "label": " ", "shape": "dot", "size": 21.44927536231884, "title": "ID: ffffffd700000022ffffffce\nFitness: 597.3953"}, {"color": "#8ff1b0", "id": "ffffffe100000033ffffffd2", "label": " ", "shape": "dot", "size": 24.63768115942029, "title": "ID: ffffffe100000033ffffffd2\nFitness: 315.4309"}, {"color": "#93f2b3", "id": "00000032ffffffd20000002f", "label": " ", "shape": "dot", "size": 21.44927536231884, "title": "ID: 00000032ffffffd20000002f\nFitness: 297.7796"}, {"color": "#98f2b6", "id": "ffffffd4ffffffcdffffffce", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffd4ffffffcdffffffce\nFitness: 275.4771"}, {"color": "#f54242", "id": "ffffffcdffffffcdffffffcd", "label": " ", "shape": "diamond", "size": 14, "title": "ID: ffffffcdffffffcdffffffcd\nFitness: 0.0000"}, {"color": "#f5e642", "id": "0000001e0000001b00000026", "label": " ", "shape": "square", "size": 14, "title": "ID: 0000001e0000001b00000026\nFitness: 910.5051"}, {"color": "#19da59", "id": "ffffffeeffffffcd0000001f", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffeeffffffcd0000001f\nFitness: 836.2159"}, {"color": "#38e772", "id": "0000000b0000002effffffe8", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: 0000000b0000002effffffe8\nFitness: 675.0277"}, {"color": "#57eb88", "id": "0000001b00000031ffffffd3", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 0000001b00000031ffffffd3\nFitness: 546.0058"}, {"color": "#59eb89", "id": "ffffffd7000000310000001f", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffd7000000310000001f\nFitness: 539.6202"}, {"color": "#5aeb8b", "id": "000000270000001d00000026", "label": " ", "shape": "dot", "size": 22.028985507246375, "title": "ID: 000000270000001d00000026\nFitness: 531.6640"}, {"color": "#6ced97", "id": "000000160000002fffffffea", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 000000160000002fffffffea\nFitness: 458.3112"}, {"color": "#7aefa1", "id": "000000210000002900000029", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 000000210000002900000029\nFitness: 400.5643"}, {"color": "#9cf3b9", "id": "ffffffd5ffffffd7ffffffce", "label": " ", "shape": "dot", "size": 21.44927536231884, "title": "ID: ffffffd5ffffffd7ffffffce\nFitness: 262.0123"}, {"color": "#bbf6cf", "id": "ffffffd4ffffffcd00000030", "label": " ", "shape": "dot", "size": 22.89855072463768, "title": "ID: ffffffd4ffffffcd00000030\nFitness: 134.4143"}, {"color": "#cdf9db", "id": "00000033ffffffcd00000030", "label": " ", "shape": "dot", "size": 60.0, "title": "ID: 00000033ffffffcd00000030\nFitness: 59.1970"}, {"color": "#f54242", "id": "00000033ffffffcd00000031", "label": " ", "shape": "diamond", "size": 14, "title": "ID: 00000033ffffffcd00000031\nFitness: 49.0024"}, {"color": "#f5e642", "id": "ffffffceffffffd5ffffffd8", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffceffffffd5ffffffd8\nFitness: 661.3910"}, {"color": "#58eb89", "id": "0000001dffffffdcffffffd2", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 0000001dffffffdcffffffd2\nFitness: 542.4097"}, {"color": "#61ec8f", "id": "0000001a0000002fffffffd5", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 0000001a0000002fffffffd5\nFitness: 503.4678"}, {"color": "#75ee9d", "id": "ffffffcd0000002fffffffd5", "label": " ", "shape": "dot", "size": 20.869565217391305, "title": "ID: ffffffcd0000002fffffffd5\nFitness: 423.7246"}, {"color": "#a5f4bf", "id": "000000270000002cffffffcf", "label": " ", "shape": "dot", "size": 21.44927536231884, "title": "ID: 000000270000002cffffffcf\nFitness: 223.4297"}, {"color": "#f5e642", "id": "ffffffcd0000002a0000002e", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffcd0000002a0000002e\nFitness: 276.6883"}, {"color": "#c4f8d5", "id": "ffffffd5ffffffcdffffffcd", "label": " ", "shape": "dot", "size": 20.869565217391305, "title": "ID: ffffffd5ffffffcdffffffcd\nFitness: 94.1611"}, {"color": "#a2f4bd", "id": "ffffffce00000030ffffffd5", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffce00000030ffffffd5\nFitness: 234.6338"}, {"color": "#f5e642", "id": "ffffffd8ffffffdbfffffff7", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffd8ffffffdbfffffff7\nFitness: 868.2971"}, {"color": "#27e566", "id": "ffffffcf00000013ffffffd8", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffcf00000013ffffffd8\nFitness: 744.5448"}, {"color": "#33e66e", "id": "0000001f000000280000001e", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 0000001f000000280000001e\nFitness: 696.6371"}, {"color": "#45e87b", "id": "ffffffcd0000000f0000002d", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffcd0000000f0000002d\nFitness: 622.0149"}, {"color": "#51ea84", "id": "ffffffd50000002affffffd4", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffd50000002affffffd4\nFitness: 569.1257"}, {"color": "#a2f4bd", "id": "ffffffcfffffffd6ffffffd8", "label": " ", "shape": "dot", "size": 28.405797101449274, "title": "ID: ffffffcfffffffd6ffffffd8\nFitness: 234.6681"}, {"color": "#cff9dd", "id": "0000003100000033ffffffcd", "label": " ", "shape": "dot", "size": 22.89855072463768, "title": "ID: 0000003100000033ffffffcd\nFitness: 49.0045"}, {"color": "#f5e642", "id": "ffffffd9ffffffedfffffff4", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffd9ffffffedfffffff4\nFitness: 1002.0212"}, {"color": "#17ca53", "id": "ffffffe700000023ffffffd5", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffe700000023ffffffd5\nFitness: 901.7209"}, {"color": "#60ec8e", "id": "ffffffe70000002100000032", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffe70000002100000032\nFitness: 510.2150"}, {"color": "#66ec93", "id": "00000032000000170000002f", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 00000032000000170000002f\nFitness: 483.4182"}, {"color": "#74ee9d", "id": "0000001fffffffd600000033", "label": " ", "shape": "dot", "size": 22.028985507246375, "title": "ID: 0000001fffffffd600000033\nFitness: 424.1227"}, {"color": "#79efa0", "id": "ffffffdb0000002100000032", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffdb0000002100000032\nFitness: 405.7830"}, {"color": "#aef5c6", "id": "ffffffd8ffffffceffffffcf", "label": " ", "shape": "dot", "size": 23.47826086956522, "title": "ID: ffffffd8ffffffceffffffcf\nFitness: 187.0436"}, {"color": "#b7f6cc", "id": "0000002dffffffcd00000028", "label": " ", "shape": "dot", "size": 28.985507246376812, "title": "ID: 0000002dffffffcd00000028\nFitness: 149.2324"}, {"color": "#f5e642", "id": "ffffffeeffffffd70000001b", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffeeffffffd70000001b\nFitness: 695.2952"}, {"color": "#57eb89", "id": "0000002f0000002cffffffd8", "label": " ", "shape": "dot", "size": 20.869565217391305, "title": "ID: 0000002f0000002cffffffd8\nFitness: 544.1406"}, {"color": "#76ee9e", "id": "0000002a00000024ffffffcd", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: 0000002a00000024ffffffcd\nFitness: 417.9434"}, {"color": "#7eefa4", "id": "000000330000003000000031", "label": " ", "shape": "dot", "size": 24.057971014492754, "title": "ID: 000000330000003000000031\nFitness: 384.9992"}, {"color": "#b2f5c8", "id": "ffffffcdffffffd5ffffffcd", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffcdffffffd5ffffffcd\nFitness: 170.1856"}, {"color": "#787878", "id": "ffffffcdffffffd4ffffffcd", "label": " ", "shape": "dot", "size": 22.318840579710145, "title": "ID: ffffffcdffffffd4ffffffcd\nFitness: 75.7546"}, {"color": "#f5e642", "id": "ffffffdc000000190000001e", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffdc000000190000001e\nFitness: 776.6922"}, {"color": "#33e66f", "id": "ffffffd3ffffffde0000001f", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffd3ffffffde0000001f\nFitness: 695.7460"}, {"color": "#c1f7d3", "id": "00000032ffffffce00000030", "label": " ", "shape": "dot", "size": 26.3768115942029, "title": "ID: 00000032ffffffce00000030\nFitness: 105.8256"}, {"color": "#f54242", "id": "ffffffcf0000003300000031", "label": " ", "shape": "diamond", "size": 14, "title": "ID: ffffffcf0000003300000031\nFitness: 27.4718"}, {"color": "#d0f9de", "id": "0000003300000030ffffffd0", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: 0000003300000030ffffffd0\nFitness: 44.5938"}, {"color": "#f5e642", "id": "ffffffe8ffffffd600000010", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffe8ffffffd600000010\nFitness: 703.8150"}, {"color": "#31e66d", "id": "ffffffd90000002f00000007", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffd90000002f00000007\nFitness: 702.9054"}, {"color": "#7befa2", "id": "ffffffcdffffffd3ffffffd3", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: ffffffcdffffffd3ffffffd3\nFitness: 397.9001"}, {"color": "#90f1b1", "id": "ffffffcfffffffd6ffffffce", "label": " ", "shape": "dot", "size": 24.347826086956523, "title": "ID: ffffffcfffffffd6ffffffce\nFitness: 309.3948"}, {"color": "#f5e642", "id": "ffffffed0000003100000020", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffed0000003100000020\nFitness: 777.5856"}, {"color": "#47e97d", "id": "0000002f00000033ffffffd3", "label": " ", "shape": "dot", "size": 21.73913043478261, "title": "ID: 0000002f00000033ffffffd3\nFitness: 612.5513"}, {"color": "#57eb88", "id": "00000031000000330000001a", "label": " ", "shape": "dot", "size": 21.44927536231884, "title": "ID: 00000031000000330000001a\nFitness: 544.9765"}, {"color": "#c1f7d3", "id": "0000002effffffcd00000031", "label": " ", "shape": "dot", "size": 30.72463768115942, "title": "ID: 0000002effffffcd00000031\nFitness: 108.1386"}, {"color": "#f5e642", "id": "ffffffe4ffffffd800000029", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffe4ffffffd800000029\nFitness: 2122.5257"}, {"color": "#dc7def", "id": "ffffffe2ffffffd300000026", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffe2ffffffd300000026\nFitness: 390.1018"}, {"color": "#e49cf3", "id": "ffffffdcffffffd000000032", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: ffffffdcffffffd000000032\nFitness: 260.1238"}, {"color": "#eab1f5", "id": "ffffffd4ffffffcd00000029", "label": " ", "shape": "dot", "size": 29.565217391304348, "title": "ID: ffffffd4ffffffcd00000029\nFitness: 175.4490"}, {"color": "#eebff7", "id": "ffffffd4ffffffcd00000031", "label": " ", "shape": "dot", "size": 44.05797101449275, "title": "ID: ffffffd4ffffffcd00000031\nFitness: 114.2089"}, {"color": "#f5e642", "id": "00000025ffffffdbffffffcf", "label": " ", "shape": "square", "size": 14, "title": "ID: 00000025ffffffdbffffffcf\nFitness: 1683.8031"}, {"color": "#cb3ee8", "id": "0000002bffffffe9ffffffd5", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: 0000002bffffffe9ffffffd5\nFitness: 650.2751"}, {"color": "#da75ee", "id": "00000033ffffffe7ffffffd6", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 00000033ffffffe7ffffffd6\nFitness: 421.9506"}, {"color": "#de84f0", "id": "0000002bffffffdfffffffdb", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 0000002bffffffdfffffffdb\nFitness: 361.8367"}, {"color": "#e8a9f4", "id": "00000033ffffffdcffffffe1", "label": " ", "shape": "dot", "size": 34.492753623188406, "title": "ID: 00000033ffffffdcffffffe1\nFitness: 206.3401"}, {"color": "#efc5f8", "id": "ffffffd4ffffffcdffffffcd", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: ffffffd4ffffffcdffffffcd\nFitness: 89.8521"}, {"color": "#f5e642", "id": "0000000cffffffeffffffffb", "label": " ", "shape": "square", "size": 14, "title": "ID: 0000000cffffffeffffffffb\nFitness: 1527.7243"}, {"color": "#741088", "id": "0000000effffffed00000003", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 0000000effffffed00000003\nFitness: 1172.9012"}, {"color": "#7e1194", "id": "00000007ffffffedfffffffa", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 00000007ffffffedfffffffa\nFitness: 1123.2735"}, {"color": "#9615b0", "id": "fffffffdffffffe4fffffff6", "label": " ", "shape": "dot", "size": 20.869565217391305, "title": "ID: fffffffdffffffe4fffffff6\nFitness: 1007.6376"}, {"color": "#b018cf", "id": "ffffffebffffffe8ffffffeb", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffebffffffe8ffffffeb\nFitness: 880.1836"}, {"color": "#f5e642", "id": "ffffffd7000000140000002b", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffd7000000140000002b\nFitness: 1519.3272"}, {"color": "#d155ea", "id": "ffffffd6000000100000002e", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: ffffffd6000000100000002e\nFitness: 555.2110"}, {"color": "#dd81f0", "id": "ffffffdd0000001800000031", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: ffffffdd0000001800000031\nFitness: 374.5580"}, {"color": "#de83f0", "id": "ffffffcd0000002a00000024", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffcd0000002a00000024\nFitness: 363.1387"}, {"color": "#efc4f8", "id": "ffffffcd000000290000002d", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: ffffffcd000000290000002d\nFitness: 96.0745"}, {"color": "#f0caf8", "id": "ffffffcd000000310000002e", "label": " ", "shape": "dot", "size": 45.21739130434783, "title": "ID: ffffffcd000000310000002e\nFitness: 72.1454"}, {"color": "#f2d1f9", "id": "ffffffd00000003300000030", "label": " ", "shape": "dot", "size": 34.492753623188406, "title": "ID: ffffffd00000003300000030\nFitness: 42.0095"}, {"color": "#f5e642", "id": "ffffffd8000000060000000b", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffd8000000060000000b\nFitness: 1215.9255"}, {"color": "#c62be5", "id": "ffffffd90000000400000008", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: ffffffd90000000400000008\nFitness: 726.2275"}, {"color": "#c831e6", "id": "ffffffd9fffffff6fffffffc", "label": " ", "shape": "dot", "size": 20.869565217391305, "title": "ID: ffffffd9fffffff6fffffffc\nFitness: 704.9017"}, {"color": "#cc42e8", "id": "ffffffcd00000005ffffffef", "label": " ", "shape": "dot", "size": 21.73913043478261, "title": "ID: ffffffcd00000005ffffffef\nFitness: 632.1624"}, {"color": "#cd45e8", "id": "ffffffcdfffffff6ffffffed", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: ffffffcdfffffff6ffffffed\nFitness: 620.9622"}, {"color": "#ce48e9", "id": "ffffffcefffffff3ffffffd7", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffcefffffff3ffffffd7\nFitness: 607.4364"}, {"color": "#d562ec", "id": "ffffffcdfffffff6ffffffcd", "label": " ", "shape": "dot", "size": 28.115942028985508, "title": "ID: ffffffcdfffffff6ffffffcd\nFitness: 500.4230"}, {"color": "#d666ec", "id": "fffffff5fffffffcffffffcd", "label": " ", "shape": "dot", "size": 22.318840579710145, "title": "ID: fffffff5fffffffcffffffcd\nFitness: 486.1563"}, {"color": "#d76aed", "id": "ffffffe000000017ffffffd3", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: ffffffe000000017ffffffd3\nFitness: 466.1366"}, {"color": "#e08ef1", "id": "ffffffd800000023ffffffcf", "label": " ", "shape": "dot", "size": 24.347826086956523, "title": "ID: ffffffd800000023ffffffcf\nFitness: 320.7908"}, {"color": "#e5a0f3", "id": "ffffffdb0000002bffffffd0", "label": " ", "shape": "dot", "size": 24.63768115942029, "title": "ID: ffffffdb0000002bffffffd0\nFitness: 242.4384"}, {"color": "#e6a3f4", "id": "ffffffe100000032ffffffd3", "label": " ", "shape": "dot", "size": 25.797101449275363, "title": "ID: ffffffe100000032ffffffd3\nFitness: 232.2036"}, {"color": "#e8a9f4", "id": "ffffffe100000033ffffffdc", "label": " ", "shape": "dot", "size": 27.53623188405797, "title": "ID: ffffffe100000033ffffffdc\nFitness: 206.3401"}, {"color": "#f54242", "id": "ffffffcd00000031ffffffd4", "label": " ", "shape": "diamond", "size": 14, "title": "ID: ffffffcd00000031ffffffd4\nFitness: 114.2089"}, {"color": "#f5e642", "id": "fffffffc00000031fffffffd", "label": " ", "shape": "square", "size": 14, "title": "ID: fffffffc00000031fffffffd\nFitness: 1680.6892"}, {"color": "#d155ea", "id": "fffffffc0000002efffffff6", "label": " ", "shape": "dot", "size": 22.318840579710145, "title": "ID: fffffffc0000002efffffff6\nFitness: 555.9141"}, {"color": "#e294f2", "id": "000000330000002100000022", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: 000000330000002100000022\nFitness: 294.6887"}, {"color": "#e499f2", "id": "000000320000003300000020", "label": " ", "shape": "dot", "size": 43.47826086956522, "title": "ID: 000000320000003300000020\nFitness: 271.7831"}, {"color": "#f54242", "id": "000000300000002d0000002d", "label": " ", "shape": "diamond", "size": 14, "title": "ID: 000000300000002d0000002d\nFitness: 161.6605"}, {"color": "#f54242", "id": "0000002d000000300000002d", "label": " ", "shape": "diamond", "size": 14, "title": "ID: 0000002d000000300000002d\nFitness: 161.7048"}, {"color": "#f5e642", "id": "ffffffd5000000290000002d", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffd5000000290000002d\nFitness: 1804.4110"}, {"color": "#cc40e8", "id": "ffffffde0000002600000033", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: ffffffde0000002600000033\nFitness: 643.1490"}, {"color": "#df88f0", "id": "ffffffe70000002400000033", "label": " ", "shape": "dot", "size": 23.18840579710145, "title": "ID: ffffffe70000002400000033\nFitness: 343.5031"}, {"color": "#df8af1", "id": "ffffffe80000001800000030", "label": " ", "shape": "dot", "size": 21.44927536231884, "title": "ID: ffffffe80000001800000030\nFitness: 336.8877"}, {"color": "#e59ff3", "id": "000000280000002d0000002d", "label": " ", "shape": "dot", "size": 20.579710144927535, "title": "ID: 000000280000002d0000002d\nFitness: 248.8838"}, {"color": "#e59ff3", "id": "0000002d0000002d00000028", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 0000002d0000002d00000028\nFitness: 247.2850"}, {"color": "#f5e642", "id": "0000002d0000002300000029", "label": " ", "shape": "square", "size": 14, "title": "ID: 0000002d0000002300000029\nFitness: 1088.0231"}, {"color": "#df89f1", "id": "000000330000003000000032", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: 000000330000003000000032\nFitness: 339.4659"}, {"color": "#f5e642", "id": "ffffffcf000000050000000b", "label": " ", "shape": "square", "size": 14, "title": "ID: ffffffcf000000050000000b\nFitness: 1014.4180"}, {"color": "#cf4ce9", "id": "ffffffcd0000000400000009", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: ffffffcd0000000400000009\nFitness: 592.5285"}, {"color": "#d666ec", "id": "ffffffcdfffffff5fffffffc", "label": " ", "shape": "dot", "size": 24.63768115942029, "title": "ID: ffffffcdfffffff5fffffffc\nFitness: 486.1563"}, {"color": "#d76aed", "id": "ffffffd3ffffffe000000017", "label": " ", "shape": "dot", "size": 22.318840579710145, "title": "ID: ffffffd3ffffffe000000017\nFitness: 466.1366"}, {"color": "#e292f2", "id": "ffffffcdffffffcd00000033", "label": " ", "shape": "dot", "size": 20.28985507246377, "title": "ID: ffffffcdffffffcd00000033\nFitness: 302.9369"}, {"color": "#e8a9f4", "id": "ffffffd3ffffffd40000002d", "label": " ", "shape": "dot", "size": 24.63768115942029, "title": "ID: ffffffd3ffffffd40000002d\nFitness: 207.7404"}, {"color": "#f54242", "id": "ffffffdcffffffe100000033", "label": " ", "shape": "diamond", "size": 14, "title": "ID: ffffffdcffffffe100000033\nFitness: 206.3401"}, {"color": "#f5e642", "id": "fffffff9ffffffeaffffffcf", "label": " ", "shape": "square", "size": 14, "title": "ID: fffffff9ffffffeaffffffcf\nFitness: 1934.0957"}, {"color": "#cd45e8", "id": "fffffff6ffffffedffffffcd", "label": " ", "shape": "dot", "size": 21.159420289855074, "title": "ID: fffffff6ffffffedffffffcd\nFitness: 620.9622"}, {"color": "#d461ec", "id": "ffffffdcffffffe1ffffffdc", "label": " ", "shape": "dot", "size": 20.0, "title": "ID: ffffffdcffffffe1ffffffdc\nFitness: 505.7395"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "color": "black", "from": "000000300000001c00000019", "to": "ffffffd700000022ffffffce", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd700000022ffffffce", "to": "ffffffe100000033ffffffd2", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe100000033ffffffd2", "to": "00000032ffffffd20000002f", "value": 1}, {"arrows": "to", "color": "black", "from": "00000032ffffffd20000002f", "to": "ffffffd4ffffffcdffffffce", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd4ffffffcdffffffce", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "0000001e0000001b00000026", "to": "ffffffeeffffffcd0000001f", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffeeffffffcd0000001f", "to": "0000000b0000002effffffe8", "value": 1}, {"arrows": "to", "color": "black", "from": "0000000b0000002effffffe8", "to": "0000001b00000031ffffffd3", "value": 1}, {"arrows": "to", "color": "black", "from": "0000001b00000031ffffffd3", "to": "ffffffd7000000310000001f", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd7000000310000001f", "to": "000000270000001d00000026", "value": 1}, {"arrows": "to", "color": "black", "from": "000000270000001d00000026", "to": "000000160000002fffffffea", "value": 1}, {"arrows": "to", "color": "black", "from": "000000160000002fffffffea", "to": "000000210000002900000029", "value": 1}, {"arrows": "to", "color": "black", "from": "000000210000002900000029", "to": "ffffffd5ffffffd7ffffffce", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd5ffffffd7ffffffce", "to": "ffffffd4ffffffcd00000030", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd4ffffffcd00000030", "to": "00000033ffffffcd00000030", "value": 1}, {"arrows": "to", "color": "black", "from": "00000033ffffffcd00000030", "to": "00000033ffffffcd00000031", "value": 1}, {"arrows": "to", "color": "black", "from": "00000033ffffffcd00000030", "to": "ffffffcf0000003300000031", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffceffffffd5ffffffd8", "to": "0000001dffffffdcffffffd2", "value": 1}, {"arrows": "to", "color": "black", "from": "0000001dffffffdcffffffd2", "to": "0000001a0000002fffffffd5", "value": 1}, {"arrows": "to", "color": "black", "from": "0000001a0000002fffffffd5", "to": "ffffffcd0000002fffffffd5", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd0000002fffffffd5", "to": "000000270000002cffffffcf", "value": 1}, {"arrows": "to", "color": "black", "from": "000000270000002cffffffcf", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd0000002a0000002e", "to": "ffffffd5ffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd5ffffffcdffffffcd", "to": "ffffffce00000030ffffffd5", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd5ffffffcdffffffcd", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffce00000030ffffffd5", "to": "ffffffd5ffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd8ffffffdbfffffff7", "to": "ffffffcf00000013ffffffd8", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcf00000013ffffffd8", "to": "0000001f000000280000001e", "value": 1}, {"arrows": "to", "color": "black", "from": "0000001f000000280000001e", "to": "ffffffcd0000000f0000002d", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd0000000f0000002d", "to": "ffffffd50000002affffffd4", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd50000002affffffd4", "to": "ffffffcfffffffd6ffffffd8", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcfffffffd6ffffffd8", "to": "0000003100000033ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "0000003100000033ffffffcd", "to": "ffffffcdffffffcdffffffcd", "value": 2}, {"arrows": "to", "color": "black", "from": "ffffffd9ffffffedfffffff4", "to": "ffffffe700000023ffffffd5", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe700000023ffffffd5", "to": "ffffffe70000002100000032", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe70000002100000032", "to": "00000032000000170000002f", "value": 1}, {"arrows": "to", "color": "black", "from": "00000032000000170000002f", "to": "0000001fffffffd600000033", "value": 1}, {"arrows": "to", "color": "black", "from": "0000001fffffffd600000033", "to": "ffffffdb0000002100000032", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdb0000002100000032", "to": "ffffffd8ffffffceffffffcf", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd8ffffffceffffffcf", "to": "0000002dffffffcd00000028", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002dffffffcd00000028", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffeeffffffd70000001b", "to": "0000002f0000002cffffffd8", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002f0000002cffffffd8", "to": "0000002a00000024ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002a00000024ffffffcd", "to": "000000330000003000000031", "value": 1}, {"arrows": "to", "color": "black", "from": "000000330000003000000031", "to": "ffffffcdffffffd5ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdffffffd5ffffffcd", "to": "ffffffcdffffffd4ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdffffffd4ffffffcd", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdc000000190000001e", "to": "ffffffd3ffffffde0000001f", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd3ffffffde0000001f", "to": "00000032ffffffce00000030", "value": 1}, {"arrows": "to", "color": "black", "from": "00000032ffffffce00000030", "to": "00000033ffffffcd00000030", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcf0000003300000031", "to": "0000003300000030ffffffd0", "value": 1}, {"arrows": "to", "color": "black", "from": "0000003300000030ffffffd0", "to": "ffffffcf0000003300000031", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe8ffffffd600000010", "to": "ffffffd90000002f00000007", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd90000002f00000007", "to": "ffffffcdffffffd3ffffffd3", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdffffffd3ffffffd3", "to": "ffffffcfffffffd6ffffffce", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcfffffffd6ffffffce", "to": "ffffffcdffffffd4ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffed0000003100000020", "to": "0000002f00000033ffffffd3", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002f00000033ffffffd3", "to": "00000031000000330000001a", "value": 1}, {"arrows": "to", "color": "black", "from": "00000031000000330000001a", "to": "0000002effffffcd00000031", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002effffffcd00000031", "to": "0000003100000033ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe4ffffffd800000029", "to": "ffffffe2ffffffd300000026", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe2ffffffd300000026", "to": "ffffffdcffffffd000000032", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdcffffffd000000032", "to": "ffffffd4ffffffcd00000029", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd4ffffffcd00000029", "to": "ffffffd4ffffffcd00000031", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd4ffffffcd00000031", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "00000025ffffffdbffffffcf", "to": "0000002bffffffe9ffffffd5", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002bffffffe9ffffffd5", "to": "00000033ffffffe7ffffffd6", "value": 1}, {"arrows": "to", "color": "black", "from": "00000033ffffffe7ffffffd6", "to": "0000002bffffffdfffffffdb", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002bffffffdfffffffdb", "to": "00000033ffffffdcffffffe1", "value": 1}, {"arrows": "to", "color": "black", "from": "00000033ffffffdcffffffe1", "to": "ffffffd4ffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd4ffffffcdffffffcd", "to": "ffffffcdffffffd4ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "0000000cffffffeffffffffb", "to": "0000000effffffed00000003", "value": 1}, {"arrows": "to", "color": "black", "from": "0000000effffffed00000003", "to": "00000007ffffffedfffffffa", "value": 1}, {"arrows": "to", "color": "black", "from": "00000007ffffffedfffffffa", "to": "fffffffdffffffe4fffffff6", "value": 1}, {"arrows": "to", "color": "black", "from": "fffffffdffffffe4fffffff6", "to": "ffffffebffffffe8ffffffeb", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffebffffffe8ffffffeb", "to": "ffffffcdffffffcdffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd7000000140000002b", "to": "ffffffd6000000100000002e", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd6000000100000002e", "to": "ffffffdd0000001800000031", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdd0000001800000031", "to": "ffffffcd0000002a00000024", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdd0000001800000031", "to": "ffffffe70000002400000033", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd0000002a00000024", "to": "ffffffcd000000290000002d", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd000000290000002d", "to": "ffffffcd000000310000002e", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd000000310000002e", "to": "ffffffd00000003300000030", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd00000003300000030", "to": "ffffffcf0000003300000031", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd8000000060000000b", "to": "ffffffd90000000400000008", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd90000000400000008", "to": "ffffffd9fffffff6fffffffc", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd9fffffff6fffffffc", "to": "ffffffcd00000005ffffffef", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd00000005ffffffef", "to": "ffffffcdfffffff6ffffffed", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdfffffff6ffffffed", "to": "ffffffcefffffff3ffffffd7", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcefffffff3ffffffd7", "to": "ffffffcdfffffff6ffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdfffffff6ffffffcd", "to": "fffffff5fffffffcffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "fffffff5fffffffcffffffcd", "to": "ffffffe000000017ffffffd3", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe000000017ffffffd3", "to": "ffffffd800000023ffffffcf", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd800000023ffffffcf", "to": "ffffffdb0000002bffffffd0", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdb0000002bffffffd0", "to": "ffffffe100000032ffffffd3", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe100000032ffffffd3", "to": "ffffffe100000033ffffffdc", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe100000033ffffffdc", "to": "ffffffcd00000031ffffffd4", "value": 1}, {"arrows": "to", "color": "black", "from": "fffffffc00000031fffffffd", "to": "fffffffc0000002efffffff6", "value": 1}, {"arrows": "to", "color": "black", "from": "fffffffc0000002efffffff6", "to": "000000330000002100000022", "value": 1}, {"arrows": "to", "color": "black", "from": "000000330000002100000022", "to": "000000320000003300000020", "value": 1}, {"arrows": "to", "color": "black", "from": "000000320000003300000020", "to": "000000300000002d0000002d", "value": 2}, {"arrows": "to", "color": "black", "from": "000000300000002d0000002d", "to": "0000002d000000300000002d", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd5000000290000002d", "to": "ffffffde0000002600000033", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffde0000002600000033", "to": "ffffffdd0000001800000031", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe70000002400000033", "to": "ffffffe80000001800000030", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffe80000001800000030", "to": "000000280000002d0000002d", "value": 1}, {"arrows": "to", "color": "black", "from": "000000280000002d0000002d", "to": "0000002d0000002d00000028", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002d0000002d00000028", "to": "000000300000002d0000002d", "value": 1}, {"arrows": "to", "color": "black", "from": "0000002d0000002300000029", "to": "000000330000003000000032", "value": 1}, {"arrows": "to", "color": "black", "from": "000000330000003000000032", "to": "000000320000003300000020", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcf000000050000000b", "to": "ffffffcd0000000400000009", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcd0000000400000009", "to": "ffffffcdfffffff5fffffffc", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdfffffff5fffffffc", "to": "ffffffd3ffffffe000000017", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd3ffffffe000000017", "to": "ffffffcdffffffcd00000033", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffcdffffffcd00000033", "to": "ffffffd3ffffffd40000002d", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffd3ffffffd40000002d", "to": "ffffffdcffffffe100000033", "value": 1}, {"arrows": "to", "color": "black", "from": "fffffff9ffffffeaffffffcf", "to": "fffffff6ffffffedffffffcd", "value": 1}, {"arrows": "to", "color": "black", "from": "fffffff6ffffffedffffffcd", "to": "ffffffdcffffffe1ffffffdc", "value": 1}, {"arrows": "to", "color": "black", "from": "ffffffdcffffffe1ffffffdc", "to": "ffffffcdffffffcdffffffcd", "value": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    
+    <div style="position: absolute; top: 20px; right: 20px; background: white; padding: 10px; 
+                border: 1px solid #ccc; font-family: sans-serif; font-size: 13px; z-index:999;">
+        <b>Legend</b><br>
+        
+        <div style="display:flex; align-items:center; margin-bottom:4px;">
+            <div style="background:#f5e642; border:1px solid #000; margin-right:6px; width:12px; height:12px; border-radius:0%;"></div>
+            <span>Start Node</span>
+        </div>
+        
+        <div style="display:flex; align-items:center; margin-bottom:4px;">
+            <div style="background:#f54242; border:1px solid #000; margin-right:6px; width:12px; height:12px; transform: rotate(45deg); border-radius:0%;"></div>
+            <span>End Node</span>
+        </div>
+        
+        <div style="display:flex; align-items:center; margin-bottom:4px;">
+            <div style="background:#787878; border:1px solid #000; margin-right:6px; width:12px; height:12px; border-radius:50%;"></div>
+            <span>Merged Node (Multiple Origins)</span>
+        </div>
+        
+        <div style="display:flex; align-items:center; margin-bottom:4px;">
+            <div style="background:#1be45e; border:1px solid #000; margin-right:6px; width:12px; height:12px; border-radius:50%;"></div>
+            <span>DE</span>
+        </div>
+        
+        <div style="display:flex; align-items:center; margin-bottom:4px;">
+            <div style="background:#b319d2; border:1px solid #000; margin-right:6px; width:12px; height:12px; border-radius:50%;"></div>
+            <span>ILS</span>
+        </div>
+        
+        <hr style="margin:6px 0;">
+        <div style="font-size: 11px;">Size ∝ Visit Frequency</div>
+        <div style="font-size: 11px;">Shade ∝ Fitness</div>
+    </div>
+    
+</body>
+</html>
