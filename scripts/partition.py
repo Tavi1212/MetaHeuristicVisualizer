@@ -8,8 +8,22 @@ from scipy.spatial.distance import pdist, squareform
 
 
 def discrete_shannon_entropy(G, nr):
+    start_nodes = [n for n, d in G.nodes(data=True) if d.get("type") == "start"]
+    end_nodes = [n for n, d in G.nodes(data=True) if d.get("type") == "end"]
+    if not start_nodes or not end_nodes:
+        raise ValueError("Start and end nodes are required.")
+
+    start, end = start_nodes[0], end_nodes[0]
+
+    try:
+        critical_path = set(nx.shortest_path(G, source=start, target=end))
+    except nx.NetworkXNoPath:
+        critical_path = set()
+
     entropies = []
     for node_id, _ in G.nodes(data=True):
+        if node_id in critical_path:
+            continue
         entropy = utils.shannon_entropy_string(node_id)
         entropies.append((node_id, entropy))
 
@@ -20,18 +34,18 @@ def discrete_shannon_entropy(G, nr):
     nodes_to_remove = [node_id for node_id, _ in entropies[:del_count]]
 
     for node_id in nodes_to_remove:
-        if node_id in G:
+        if node_id in G and G.nodes[node_id].get("type") == "intermediate":
             utils.remove_node_between_two(G, node_id)
 
 
 def cont_standard_partitioning(G, n_bins=5, min_bound=0.0, max_bound=1.0):
-
     if n_bins < 0:
         n_bins = 10 ** abs(n_bins)
 
     cube_size = (max_bound - min_bound) / n_bins
     cube_map = {}
     supernode_counts = defaultdict(int)
+    supernode_types = defaultdict(set)  # Track original types
 
     for node in list(G.nodes):
         vectors = utils.parse_vectors_string(node)
@@ -49,17 +63,27 @@ def cont_standard_partitioning(G, n_bins=5, min_bound=0.0, max_bound=1.0):
         cube_id = str(bin_indices)
         cube_map[node] = cube_id
         supernode_counts[cube_id] += G.nodes[node].get("count", 1)
+        supernode_types[cube_id].add(G.nodes[node].get("type", "intermediate"))
 
     H = nx.DiGraph()
 
-    for node, cube in cube_map.items():
-        if cube not in H:
-            H.add_node(
-                cube,
-                count=supernode_counts[cube],
-                shape=G.nodes[node].get("shape", "circle"),
-                color=G.nodes[node].get("color", "gray")
-            )
+    for cube_id in supernode_counts:
+        # Determine supernode type
+        types = supernode_types[cube_id]
+        if "start" in types:
+            node_type = "start"
+        elif "end" in types:
+            node_type = "end"
+        else:
+            node_type = "intermediate"
+
+        H.add_node(
+            cube_id,
+            count=supernode_counts[cube_id],
+            type=node_type,
+            shape="circle",  # optional override
+            color="gray"
+        )
 
     for u, v in G.edges:
         if u not in cube_map or v not in cube_map:
@@ -90,6 +114,21 @@ def get_distance_fn(name):
     else:
         raise ValueError(f"Unknown distance metric: {name}")
 
+
+def trim_cluster_by_fitness(cluster_nodes, node_vectors, G, max_volume_pct, domain_size=2):
+    entries = list(zip(cluster_nodes, node_vectors))
+    # Sort by fitness, lowest first
+    entries.sort(key=lambda x: G.nodes[x[0]].get("fitness", float("inf")))
+
+    while True:
+        volume = estimate_volume_percent([v for _, v in entries], domain_size)
+        if volume <= max_volume_pct or len(entries) <= 1:
+            break
+        entries.pop(0)  # Remove the worst (lowest fitness)
+
+    return {node for node, _ in entries}  # Keep only surviving node IDs
+
+
 def estimate_volume_percent(cluster_vectors, domain_size=2):
     dimensions = list(zip(*cluster_vectors))  # transpose
     per_dim_variation = [len(set(col)) for col in dimensions]
@@ -99,18 +138,30 @@ def estimate_volume_percent(cluster_vectors, domain_size=2):
     total_volume = domain_size ** len(dimensions)
     return (cluster_volume / total_volume) * 100
 
+from scipy.spatial.distance import pdist, squareform
+from sklearn.cluster import AgglomerativeClustering
+
 def apply_agglomerative_clustering(G, max_cluster_percentage=50, max_volume_percentage=50, distance_metric="hamming"):
-    nodes = list(G.nodes)
-    node_count = len(nodes)
+    # Assign fixed cluster IDs to start/end nodes
+    for node in G.nodes:
+        node_type = G.nodes[node].get("type")
+        if node_type == "start":
+            G.nodes[node]["cluster"] = "start"
+        elif node_type == "end":
+            G.nodes[node]["cluster"] = "end"
 
-    if len(set(map(len, nodes))) != 1:
-        raise ValueError("All node strings must be the same length")
+    # Cluster only intermediate nodes
+    intermediates = [n for n in G.nodes if G.nodes[n].get("type") == "intermediate"]
+    if not intermediates:
+        return G
 
-    node_vectors = [[int(c) for c in n] for n in nodes]
+    node_vectors = [utils.parse_vectors_string(n, mode='auto')[0] for n in intermediates]
+
+    # Compute distance matrix
     dist_fn = get_distance_fn(distance_metric)
     dist_matrix = squareform(pdist(node_vectors, lambda u, v: dist_fn(u, v)))
 
-    n_clusters = max(1, int((node_count * max_cluster_percentage) / 100))
+    n_clusters = max(1, int((len(intermediates) * max_cluster_percentage) / 100))
 
     clustering = AgglomerativeClustering(
         n_clusters=n_clusters,
@@ -119,20 +170,23 @@ def apply_agglomerative_clustering(G, max_cluster_percentage=50, max_volume_perc
     )
     labels = clustering.fit_predict(dist_matrix)
 
-    for node, label in zip(nodes, labels):
-        G.nodes[node]['cluster'] = label
+    for node, label in zip(intermediates, labels):
+        G.nodes[node]["cluster"] = label
 
-    # Volume constraint check (discrete only)
-    violations = []
     for cluster_id in set(labels):
-        cluster_data = [node_vectors[i] for i, lbl in enumerate(labels) if lbl == cluster_id]
-        volume_pct = estimate_volume_percent(cluster_data)
-        if volume_pct > max_volume_percentage:
-            violations.append((cluster_id, volume_pct))
-    if violations:
-        print("Clusters exceeding volume limit:")
-        for cid, vol in violations:
-            print(f" - Cluster {cid}: volume = {vol:.2f}%")
+        cluster_indices = [i for i, lbl in enumerate(labels) if lbl == cluster_id]
+        cluster_nodes = [intermediates[i] for i in cluster_indices]
+        cluster_vectors = [node_vectors[i] for i in cluster_indices]
+
+        volume_pct = estimate_volume_percent(cluster_vectors)
+        if volume_pct <= max_volume_percentage:
+            continue
+
+        # Trim nodes by fitness to reduce cluster volume
+        kept_nodes = trim_cluster_by_fitness(cluster_nodes, cluster_vectors, G, max_volume_percentage)
+        for node in cluster_nodes:
+            if node not in kept_nodes:
+                G.nodes[node]["cluster"] = None  # Unassign cluster
 
     return G
 
@@ -140,28 +194,35 @@ def collapse_to_supernodes(G):
     cluster_ids = set(nx.get_node_attributes(G, 'cluster').values())
     H = nx.DiGraph()
 
+    id_map = {}  # maps int cluster_id to str node ID
+
     for c in cluster_ids:
-        H.add_node(c, label=f"Cluster {c}", size=sum(G.nodes[n].get('count', 1) for n in G.nodes if G.nodes[n]['cluster'] == c))
+        node_id = f"cluster_{c}"
+        id_map[c] = node_id
+        H.add_node(node_id, label=node_id, size=sum(
+            G.nodes[n].get('count', 1) for n in G.nodes if G.nodes[n]['cluster'] == c
+        ))
 
     for u, v in G.edges:
         cu = G.nodes[u]['cluster']
         cv = G.nodes[v]['cluster']
         if cu != cv:
-            if H.has_edge(cu, cv):
-                H[cu][cv]['weight'] += 1
+            src = id_map[cu]
+            tgt = id_map[cv]
+            if H.has_edge(src, tgt):
+                H[src][tgt]['weight'] += 1
             else:
-                H.add_edge(cu, cv, weight=1)
+                H.add_edge(src, tgt, weight=1)
 
     return H
 
 def apply_general_clustering(G, max_cluster_percentage=50, distance_metric="euclidean", is_discrete=True):
-    from utils import parse_vectors_string, hamming_distance, euclidean_distance, manhattan_distance
 
     nodes = list(G.nodes)
     node_vectors = []
 
     for node in nodes:
-        parsed = parse_vectors_string(node)
+        parsed = utils.parse_vectors_string(node)
         flat = parsed[0]
         # Discrete = categorical characters; Continuous = numeric
         if is_discrete:
@@ -170,9 +231,9 @@ def apply_general_clustering(G, max_cluster_percentage=50, distance_metric="eucl
             node_vectors.append([float(x) for x in flat])
 
     dist_fn_map = {
-        "hamming": hamming_distance,
-        "euclidean": euclidean_distance,
-        "manhattan": manhattan_distance
+        "hamming": utils.hamming_distance,
+        "euclidean": utils.euclidean_distance,
+        "manhattan": utils.manhattan_distance
     }
 
     distance_metric = distance_metric.lower()
@@ -184,6 +245,7 @@ def apply_general_clustering(G, max_cluster_percentage=50, distance_metric="eucl
     dist_fn = dist_fn_map[distance_metric]
     dist_matrix = squareform(pdist(node_vectors, lambda u, v: dist_fn(u, v)))
     n_clusters = max(1, int((len(nodes) * max_cluster_percentage) / 100))
+    print("Max number of clusters: ", n_clusters)
 
     clustering = AgglomerativeClustering(
         n_clusters=n_clusters,
@@ -202,7 +264,6 @@ def apply_partitioning_from_config(G, config):
         if config.partitionStrategy == "shannon":
             discrete_shannon_entropy(G, nr=config.dPartitioning)
             return G
-
         elif config.partitionStrategy == "clustering":
             return apply_general_clustering(
                 G,

@@ -4,9 +4,9 @@ class RunData():
         self.data   = data
 
 class ConfigData():
-    def __init__(self, problemType="Discrete Problem",
+    def __init__(self, problemType="discrete",
                  objectiveType = "minimization",
-                 partitionStrategy= "Shannon entropy",
+                 partitionStrategy= "shannon",
                  dPartitioning=0,
                  dCSize=50,
                  dVSize=25,
@@ -55,9 +55,9 @@ class ConfigData():
     @classmethod
     def from_dict(cls, d):
         return cls(
-            problemType=d.get("problemType", "Discrete Problem"),
+            problemType=d.get("problemType", "discrete"),
             objectiveType=d.get("objectiveType", "minimization"),
-            partitionStrategy=d.get("partitionStrategy", "Shannon entropy"),
+            partitionStrategy=d.get("partitionStrategy", "shannon"),
             dPartitioning=d.get("dPartitioning", 0),
             dCSize=d.get("dCSize", 50),
             dVSize=d.get("dVSize", 25),
