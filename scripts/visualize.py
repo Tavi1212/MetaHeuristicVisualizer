@@ -1,4 +1,6 @@
+import json
 import networkx as nx
+from scripts.structures import ConfigData, AdvancedSettings
 from scripts.utils import normalize, adjust_color_lightness
 from pyvis.network import Network
 
@@ -7,15 +9,21 @@ from pyvis.network import Network
 # Start:        Yellow
 # End:          Red
 # Intermediate: Given as argument
+# Best:         Either yellow, red or given as argument depending on node type
 def tag_graph_origin(G, origin_color):
     for node in G.nodes:
-        match G.nodes[node].get("type", "intermediate"):
-            case "start":
-                G.nodes[node]["origin_color"] = "#f5e642"  # Yellow
-            case "end":
-                G.nodes[node]["origin_color"] = "#f54242"  # Red
-            case _:
-                G.nodes[node]["origin_color"] = origin_color
+        node_type = G.nodes[node].get("type", "intermediate")
+        is_best = G.nodes[node].get("best", False)
+
+        if node_type == "start":
+            G.nodes[node]["origin_color"] = "#f5e642"
+            G.nodes[node]["shape"] = "star" if is_best else "dot"
+        elif node_type == "end":
+            G.nodes[node]["origin_color"] = "#f54242"
+            G.nodes[node]["shape"] = "star" if is_best else "dot"
+        else:
+            G.nodes[node]["origin_color"] = origin_color
+            G.nodes[node]["shape"] = "star" if is_best else "dot"
 
 
 def shape_style(shape):
@@ -89,9 +97,25 @@ def add_legend(html_file, color_name_map, include_gray):
         f.write(html)
 
 
+def apply_tree_layout(net: Network, direction: str = "UD"):
+    layout_options = {
+        "layout": {
+            "hierarchical": {
+                "enabled": True,
+                "direction": direction,
+                "sortMethod": "hubsize"
+            }
+        },
+        "edges": {
+            "smooth": True
+        }
+    }
+
+    net.set_options(json.dumps(layout_options))
+
 # Takes one or more graph and creates a Search Trajectory Network
 # Result will take the form of a .html page containing the STN visualization
-def visualize_stn(graphs: list, output_file="stn_graph.html", minmax="minimization", legend_entries=None):
+def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", minmax="minimization", legend_entries=None):
     merged = nx.DiGraph()
     node_origins = {}
 
@@ -105,6 +129,9 @@ def visualize_stn(graphs: list, output_file="stn_graph.html", minmax="minimizati
 
     net = Network(height="600px", width="100%", directed=True)
 
+    if advanced.tree_layout:
+        apply_tree_layout(net, direction="UD")
+
     shape_map = {
         "start": "square",
         "end": "diamond",
@@ -112,59 +139,43 @@ def visualize_stn(graphs: list, output_file="stn_graph.html", minmax="minimizati
     }
 
     fixed_colors = {
-        "start": "#f5e642",  # Yellow
-        "end": "#f54242"  # Red
+        "start": "#f5e642",
+        "end": "#f54242"
     }
 
-    # Normalize by intermediate nodes only
     counts = [attrs.get("count", 1) for _, attrs in merged.nodes(data=True) if attrs.get("type") == "intermediate"]
     fitnesses = [attrs.get("fitness", 0) for _, attrs in merged.nodes(data=True) if attrs.get("type") == "intermediate"]
     min_count, max_count = min(counts, default=1), max(counts, default=1)
     min_fit, max_fit = min(fitnesses, default=0), max(fitnesses, default=1)
 
+    base_size = advanced.vertex_size if advanced.vertex_size > 0 else 20
+    max_size = base_size + 40
+    arrow_scale = advanced.arrow_size if advanced.arrow_size > 0 else 1
+
     has_merged_nodes = False
     for node, attrs in merged.nodes(data=True):
         node_type = attrs.get("type", "intermediate")
-        shape = shape_map.get(node_type, "dot")
+        shape = attrs.get("shape", shape_map.get(node_type, "dot"))
         fitness = attrs.get("fitness", 0)
         title = f"ID: {node}\nFitness: {fitness:.4f}"
 
-        # Determine node color
-        if node_type == "start":
-            color = fixed_colors[node_type]
-            size = 14  # smaller for clarity
-        elif node_type == "end":
-            color = fixed_colors[node_type]
-            size = 14  # smallest, to make end nodes less dominant
+        if node_type in fixed_colors:
+            color = attrs.get("origin_color", fixed_colors[node_type])
+            size = base_size  # fixed size for start/end nodes
         else:
             count = attrs.get("count", 1)
-            size = normalize(count, min_count, max_count, 20, 60)  # raised base size
+            size = normalize(count, min_count, max_count, base_size, max_size)
 
-            if minmax == "minimization":
-                lightness = normalize(fitness, max_fit, min_fit, 30, 90)
-            else:
-                lightness = normalize(fitness, min_fit, max_fit, 30, 90)
+            lightness = normalize(fitness, max_fit, min_fit, 30, 90) if minmax == "minimization" else normalize(fitness, min_fit, max_fit, 30, 90)
 
             base_color = list(node_origins[node])[0]
-
             if len(node_origins[node]) > 1:
                 color = "#787878"
                 has_merged_nodes = True
             else:
                 color = adjust_color_lightness(base_color, lightness)
 
-            if minmax == "minimization":
-                lightness = normalize(fitness, max_fit, min_fit, 30, 90)
-            else:
-                lightness = normalize(fitness, min_fit, max_fit, 30, 90)
-
-            base_color = list(node_origins[node])[0]
-
-            if len(node_origins[node]) > 1:
-                color = "#787878"
-                has_merged_nodes = True
-            else:
-                color = adjust_color_lightness(base_color, lightness)
+            color = attrs.get("origin_color", color)
 
         net.add_node(
             node,
@@ -180,10 +191,11 @@ def visualize_stn(graphs: list, output_file="stn_graph.html", minmax="minimizati
             u,
             v,
             color=attrs.get("color", "black"),
-            value=attrs.get("weight", 1)
+            value=attrs.get("weight", 1) * arrow_scale
         )
 
     net.save_graph(output_file)
+
     if legend_entries:
         add_legend(output_file, legend_entries, include_gray=has_merged_nodes)
 

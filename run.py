@@ -1,6 +1,6 @@
 import os
 from flask import Flask, request, jsonify, session, render_template, send_from_directory
-from scripts.config import get_config_from_session, get_upload_file_data
+from scripts.config import get_config_from_session, get_upload_file_data, get_advanced_from_session
 from scripts.partition import apply_partitioning_from_config
 from scripts.visualize import tag_graph_origin, visualize_stn
 from scripts.create import create_stn
@@ -17,7 +17,8 @@ app.secret_key = os.urandom(24)
 @app.route("/generate_visualization", methods=['POST'])
 def generate_visualization():
     try:
-        config = get_config_from_session()
+        config =   get_config_from_session()
+        advanced = get_advanced_from_session()
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
@@ -33,7 +34,7 @@ def generate_visualization():
         graphs.append(G)
 
     legend_entries = {algo["color"]: algo["name"] for algo in files_data}
-    visualize_stn(graphs, output_file="static/graph.html", minmax=config.objectiveType, legend_entries=legend_entries)
+    visualize_stn(graphs, advanced, config, output_file="static/graph.html", minmax=config.objectiveType, legend_entries=legend_entries)
 
     return jsonify({"success": True})
 

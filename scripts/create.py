@@ -9,6 +9,9 @@ import networkx as nx
 def create_stn(infile):
     df = pd.read_table(infile, sep=r"\s+")
 
+    if "Run" not in df.columns:
+        df["Run"] = 0
+
     #Identify where runs start and end
     run_changes = df["Run"].diff() != 0
     start_ids = df.loc[run_changes, "Solution1"].tolist()
