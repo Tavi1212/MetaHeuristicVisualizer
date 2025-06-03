@@ -89,6 +89,7 @@ body {
   transition: background-color 0.3s;
   user-select: none;
   text-align: center;
+  padding-inline: 3px;
 }
 
 .rect-label:hover {
@@ -351,4 +352,43 @@ input[type="checkbox"].styled-checkbox:checked::after {
 input[type="checkbox"].styled-checkbox:focus {
   box-shadow: 0 0 0 2px #3a7afe55;
   border-color: #3a7afe;
+}
+
+.algorithm:nth-child(1) {
+  margin-top: 0;
+}
+
+/* Smooth neon tech gradient animation for the main title */
+.titlu-bengos {
+  font-family: "Montserrat", "Ancizar Serif", sans-serif;
+  font-weight: 800;
+  font-size: 2.7rem;
+  letter-spacing: 1.5px;
+  background: linear-gradient(
+    90deg,
+    #00f0ff 0%,
+    #3a7afe 15%,
+    #a259ff 35%,
+    #ff5cf4 55%,
+    #a67c52 70%,
+    /* brown accent */ #ffbe00 85%,
+    #00f0ff 100%
+  );
+  background-size: 400% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: neon-bengos 7s linear infinite alternate;
+  text-align: center;
+  margin: 0.5em 0;
+}
+
+@keyframes neon-bengos {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
 }
