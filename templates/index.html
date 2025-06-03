@@ -1,144 +1,267 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <meta http-equiv="X-UA-Compatible" content="ie=edge"/>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
     <title>Metaheuristic Visualizer</title>
-</head>
-<body>
-<div class="topbar">
-    <h1>Metaheuristic Visualizer</h1>
-</div>
+  </head>
+  <body>
+    <div class="topbar">
+      <h1>Metaheuristic Visualizer</h1>
+    </div>
 
-<div class="main">
-    <div class="sidebar">
+    <div class="main">
+      <div class="sidebar">
         <h1>Configuration</h1>
 
         <form id="problem-config-form" method="POST" action="/submit">
-            <div class="config-sidebar">
-                <div class="options-text-box" style="justify-content: center;">Problem Type</div>
-
-                <div style="display: flex;">
-                    <div class="rect-container" style="gap: 0;">
-                        <input type="radio" name="objective_type" id="objective-min" class="rect-input"
-                               value="minimization" checked/>
-                        <label for="objective-min" class="rect-label upperlabel">Minimization</label>
-
-                        <input type="radio" name="objective_type" id="objective-max" class="rect-input"
-                               value="maximization"/>
-                        <label for="objective-max" class="rect-label underlabel">Maximization</label>
-                    </div>
-                    <div class="rect-container" style="gap: 0;">
-                        <input type="radio" name="problem_type" id="problem-discrete" class="rect-input"
-                               value="discrete" checked/>
-                        <label for="problem-discrete" class="rect-label upperlabel">Discrete</label>
-
-                        <input type="radio" name="problem_type" id="problem-continuous" class="rect-input"
-                               value="continuous"/>
-                        <label for="problem-continuous" class="rect-label underlabel">Continuous</label>
-                    </div>
-                </div>
-
-                <div style="text-align: center;">Partitioning Strategy</div>
-
-                <div id="discrete-options">
-                    <input type="radio" name="discrete_strategy" id="discrete-entropy" class="rect-input"
-                           value="shannon" checked/>
-                    <label for="discrete-entropy" class="rect-label">Shannon Entropy</label>
-
-                    <input type="radio" name="discrete_strategy" id="discrete-clustering" class="rect-input"
-                           value="clustering"/>
-                    <label for="discrete-clustering" class="rect-label">Agglomerative Clustering</label>
-                </div>
-
-                <div id="continuous-options" style="display: none;">
-                    <input type="radio" name="continuous_strategy" id="continuous-standard" class="rect-input"
-                           value="partitioning" checked/>
-                    <label for="continuous-standard" class="rect-label">Standard Partitioning</label>
-
-                    <input type="radio" name="continuous_strategy" id="continuous-clustering" class="rect-input"
-                           value="clustering"/>
-                    <label for="continuous-clustering" class="rect-label">Agglomerative Clustering</label>
-                </div>
-
-                <div id="discrete-entropy-options">
-                    <label for="discrete_partitioning">Partitioning:</label>
-                    <input type="number" id="discrete_partitioning" name="discrete_partitioning">
-                </div>
-
-                <div id="discrete-clustering-options" style="display: none;">
-                    <label for="discrete_cluster_size">Cluster Size:</label>
-                    <input type="number" id="discrete_cluster_size" name="discrete_cluster_size">
-
-                    <label for="discrete_volume_size">Volume Size:</label>
-                    <input type="number" id="discrete_volume_size" name="discrete_volume_size">
-
-                    <label for="discrete_distance_metric">Distance:</label>
-                    <select id="discrete_distance_metric" name="discrete_distance_metric">
-                        <option value="hamming">Hamming</option>
-                        <option value="euclidean">Euclidean</option>
-                        <option value="manhattan">Manhattan</option>
-                    </select>
-                </div>
-
-                <div id="continuous-standard-options" style="display: none;">
-                    <label for="continuous_min_bound">Min Bound:</label>
-                    <input type="number" id="continuous_min_bound" name="continuous_min_bound">
-
-                    <label for="continuous_max_bound">Max Bound:</label>
-                    <input type="number" id="continuous_max_bound" name="continuous_max_bound">
-
-                    <label for="continuous_dimensions">N Dimensions:</label>
-                    <input type="number" id="continuous_dimensions" name="continuous_dimensions">
-
-                    <label for="continuous_hypercube">Hypercube:</label>
-                    <input type="number" id="continuous_hypercube" name="continuous_hypercube">
-                </div>
-
-                <div id="continuous-clustering-options" style="display: none;">
-                    <label for="continuous_cluster_size">Cluster Size:</label>
-                    <input type="number" id="continuous_cluster_size" name="continuous_cluster_size">
-
-                    <label for="continuous_volume_size">Volume Size:</label>
-                    <input type="number" id="continuous_volume_size" name="continuous_volume_size">
-
-                    <label for="continuous_distance_metric">Distance:</label>
-                    <select id="continuous_distance_metric" name="continuous_distance_metric">
-                        <option value="hamming">Hamming</option>
-                        <option value="euclidean">Euclidean</option>
-                        <option value="manhattan">Manhattan</option>
-                    </select>
-                </div>
-
-                <details class="collapsible-menu">
-                    <summary>Advanced Options</summary>
-                    <div class="collapsible-content">
-                        <div>Best Known Solution</div>
-                        <div>Number of Runs</div>
-                        <div>Vertex Size</div>
-                        <div>Arrow Size</div>
-                        <div>Tree Layout</div>
-                    </div>
-                </details>
+          <div class="config-sidebar">
+            <div class="options-text-box" style="justify-content: center">
+              Problem Type
             </div>
 
-            <h2>Algorithms</h2>
-            <div class="container" id="algorithm_list_container"></div>
-            <button type="button" onclick="addAlgorithm()">Add Algorithm</button>
-            <button type="button" onclick="submitAllData()">Generate Graph</button>
+            <div style="display: flex">
+              <div class="rect-container" style="gap: 0">
+                <input
+                  type="radio"
+                  name="objective_type"
+                  id="objective-min"
+                  class="rect-input"
+                  value="minimization"
+                  checked
+                />
+                <label for="objective-min" class="rect-label upperlabel"
+                  >Minimization</label
+                >
+
+                <input
+                  type="radio"
+                  name="objective_type"
+                  id="objective-max"
+                  class="rect-input"
+                  value="maximization"
+                />
+                <label for="objective-max" class="rect-label underlabel"
+                  >Maximization</label
+                >
+              </div>
+              <div class="rect-container" style="gap: 0">
+                <input
+                  type="radio"
+                  name="problem_type"
+                  id="problem-discrete"
+                  class="rect-input"
+                  value="discrete"
+                  checked
+                />
+                <label for="problem-discrete" class="rect-label upperlabel"
+                  >Discrete</label
+                >
+
+                <input
+                  type="radio"
+                  name="problem_type"
+                  id="problem-continuous"
+                  class="rect-input"
+                  value="continuous"
+                />
+                <label for="problem-continuous" class="rect-label underlabel"
+                  >Continuous</label
+                >
+              </div>
+            </div>
+
+            <div style="text-align: center">Partitioning Strategy</div>
+
+            <div id="discrete-options" class="discrete-options">
+              <input
+                type="radio"
+                name="discrete_strategy"
+                id="discrete-entropy"
+                class="rect-input"
+                value="shannon"
+                checked
+              />
+              <label for="discrete-entropy" class="rect-label"
+                >Shannon Entropy</label
+              >
+
+              <input
+                type="radio"
+                name="discrete_strategy"
+                id="discrete-clustering"
+                class="rect-input"
+                value="clustering"
+              />
+              <label for="discrete-clustering" class="rect-label"
+                >Agglomerative Clustering</label
+              >
+            </div>
+
+            <div id="continuous-options" style="display: none">
+              <input
+                type="radio"
+                name="continuous_strategy"
+                id="continuous-standard"
+                class="rect-input"
+                value="partitioning"
+                checked
+              />
+              <label for="continuous-standard" class="rect-label"
+                >Standard Partitioning</label
+              >
+
+              <input
+                type="radio"
+                name="continuous_strategy"
+                id="continuous-clustering"
+                class="rect-input"
+                value="clustering"
+              />
+              <label for="continuous-clustering" class="rect-label"
+                >Agglomerative Clustering</label
+              >
+            </div>
+
+            <div id="discrete-entropy-options">
+              <label for="discrete_partitioning">Partitioning:</label>
+              <input
+                type="number"
+                id="discrete_partitioning"
+                name="discrete_partitioning"
+              />
+            </div>
+
+            <div id="discrete-clustering-options" style="display: none">
+              <div class="inner-discrete-clustering-options">
+                <div>
+                  <label for="discrete_cluster_size">Cluster Size:</label>
+                  <input
+                    type="number"
+                    id="discrete_cluster_size"
+                    name="discrete_cluster_size"
+                  />
+                </div>
+                <div>
+                  <label for="discrete_volume_size">Volume Size:</label>
+                  <input
+                    type="number"
+                    id="discrete_volume_size"
+                    name="discrete_volume_size"
+                  />
+                </div>
+                <div>
+                  <label for="discrete_distance_metric">Distance:</label>
+                  <select
+                    id="discrete_distance_metric"
+                    name="discrete_distance_metric"
+                  >
+                    <option value="hamming">Hamming</option>
+                    <option value="euclidean">Euclidean</option>
+                    <option value="manhattan">Manhattan</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div id="continuous-standard-options" style="display: none">
+              <label for="continuous_min_bound">Min Bound:</label>
+              <input
+                type="number"
+                id="continuous_min_bound"
+                name="continuous_min_bound"
+              />
+
+              <label for="continuous_max_bound">Max Bound:</label>
+              <input
+                type="number"
+                id="continuous_max_bound"
+                name="continuous_max_bound"
+              />
+
+              <label for="continuous_dimensions">N Dimensions:</label>
+              <input
+                type="number"
+                id="continuous_dimensions"
+                name="continuous_dimensions"
+              />
+
+              <label for="continuous_hypercube">Hypercube:</label>
+              <input
+                type="number"
+                id="continuous_hypercube"
+                name="continuous_hypercube"
+              />
+            </div>
+
+            <div id="continuous-clustering-options" style="display: none">
+              <label for="continuous_cluster_size">Cluster Size:</label>
+              <input
+                type="number"
+                id="continuous_cluster_size"
+                name="continuous_cluster_size"
+              />
+
+              <label for="continuous_volume_size">Volume Size:</label>
+              <input
+                type="number"
+                id="continuous_volume_size"
+                name="continuous_volume_size"
+              />
+
+              <label for="continuous_distance_metric">Distance:</label>
+              <select
+                id="continuous_distance_metric"
+                name="continuous_distance_metric"
+              >
+                <option value="hamming">Hamming</option>
+                <option value="euclidean">Euclidean</option>
+                <option value="manhattan">Manhattan</option>
+              </select>
+            </div>
+
+            <details class="collapsible-menu">
+              <summary>Advanced Options</summary>
+              <div class="collapsible-content">
+                <div>Best Known Solution</div>
+                <div>Number of Runs</div>
+                <div>Vertex Size</div>
+                <div>Arrow Size</div>
+                <div>Tree Layout</div>
+              </div>
+            </details>
+          </div>
+
+          <h2>Algorithms</h2>
+          <div class="container" id="algorithm_list_container"></div>
+          <button type="button" onclick="addAlgorithm()">Add Algorithm</button>
+          <button type="button" onclick="submitAllData()">
+            Generate Graph
+          </button>
         </form>
-    </div>
+      </div>
 
-    <div class="content">
-        <iframe id="graph-frame" src="{{ url_for('display_graph') }}" width="100%" height="800px"
-                frameborder="0"></iframe>
-    </div>
+      <div class="content">
+        <iframe
+          id="graph-frame"
+          src="{{ url_for('display_graph') }}"
+          width="100%"
+          height="800px"
+          frameborder="0"
+        ></iframe>
+      </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-</div>
-</body>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+      <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+    </div>
+  </body>
 </html>
