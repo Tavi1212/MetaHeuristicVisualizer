@@ -21,124 +21,130 @@
 
     <div class="main">
       <div class="sidebar">
-        <h1>Configuration</h1>
+        <h1 class="configuration-title">Configuration</h1>
 
         <form id="problem-config-form" method="POST" action="/submit">
           <div class="config-sidebar">
-            <div class="options-text-box" style="justify-content: center">
-              Problem Type
-            </div>
+            <div>
+              <h2 class="options-text-box">Problem Type</h2>
 
-            <div style="display: flex">
-              <div class="rect-container" style="gap: 0">
+              <div style="display: flex">
+                <div class="rect-container" style="gap: 0">
+                  <input
+                    type="radio"
+                    name="objective_type"
+                    id="objective-min"
+                    class="rect-input"
+                    value="minimization"
+                    checked
+                  />
+                  <label for="objective-min" class="rect-label upperlabel"
+                    >Minimization</label
+                  >
+
+                  <input
+                    type="radio"
+                    name="objective_type"
+                    id="objective-max"
+                    class="rect-input"
+                    value="maximization"
+                  />
+                  <label for="objective-max" class="rect-label underlabel"
+                    >Maximization</label
+                  >
+                </div>
+                <div class="rect-container" style="gap: 0">
+                  <input
+                    type="radio"
+                    name="problem_type"
+                    id="problem-discrete"
+                    class="rect-input"
+                    value="discrete"
+                    checked
+                  />
+                  <label for="problem-discrete" class="rect-label upperlabel"
+                    >Discrete</label
+                  >
+
+                  <input
+                    type="radio"
+                    name="problem_type"
+                    id="problem-continuous"
+                    class="rect-input"
+                    value="continuous"
+                  />
+                  <label for="problem-continuous" class="rect-label underlabel"
+                    >Continuous</label
+                  >
+                </div>
+              </div>
+            </div>
+            <div>
+              <h2>Partitioning Strategy</h2>
+
+              <div id="discrete-options" class="discrete-options">
+                <div class="discrete-option">
+                  <input
+                    type="radio"
+                    name="discrete_strategy"
+                    id="discrete-entropy"
+                    class="rect-input"
+                    value="shannon"
+                    checked
+                  />
+                  <label for="discrete-entropy" class="rect-label"
+                    >Shannon Entropy</label
+                  >
+                </div>
+                <div class="discrete-option">
+                  <input
+                    type="radio"
+                    name="discrete_strategy"
+                    id="discrete-clustering"
+                    class="rect-input"
+                    value="clustering"
+                  />
+                  <label for="discrete-clustering" class="rect-label"
+                    >Agglomerative Clustering</label
+                  >
+                </div>
+              </div>
+
+              <div id="continuous-options" style="display: none">
                 <input
                   type="radio"
-                  name="objective_type"
-                  id="objective-min"
+                  name="continuous_strategy"
+                  id="continuous-standard"
                   class="rect-input"
-                  value="minimization"
+                  value="partitioning"
                   checked
                 />
-                <label for="objective-min" class="rect-label upperlabel"
-                  >Minimization</label
+                <label for="continuous-standard" class="rect-label"
+                  >Standard Partitioning</label
                 >
 
                 <input
                   type="radio"
-                  name="objective_type"
-                  id="objective-max"
+                  name="continuous_strategy"
+                  id="continuous-clustering"
                   class="rect-input"
-                  value="maximization"
+                  value="clustering"
                 />
-                <label for="objective-max" class="rect-label underlabel"
-                  >Maximization</label
+                <label for="continuous-clustering" class="rect-label"
+                  >Agglomerative Clustering</label
                 >
               </div>
-              <div class="rect-container" style="gap: 0">
-                <input
-                  type="radio"
-                  name="problem_type"
-                  id="problem-discrete"
-                  class="rect-input"
-                  value="discrete"
-                  checked
-                />
-                <label for="problem-discrete" class="rect-label upperlabel"
-                  >Discrete</label
-                >
-
-                <input
-                  type="radio"
-                  name="problem_type"
-                  id="problem-continuous"
-                  class="rect-input"
-                  value="continuous"
-                />
-                <label for="problem-continuous" class="rect-label underlabel"
-                  >Continuous</label
-                >
-              </div>
-            </div>
-
-            <div style="text-align: center">Partitioning Strategy</div>
-
-            <div id="discrete-options" class="discrete-options">
-              <input
-                type="radio"
-                name="discrete_strategy"
-                id="discrete-entropy"
-                class="rect-input"
-                value="shannon"
-                checked
-              />
-              <label for="discrete-entropy" class="rect-label"
-                >Shannon Entropy</label
-              >
-
-              <input
-                type="radio"
-                name="discrete_strategy"
-                id="discrete-clustering"
-                class="rect-input"
-                value="clustering"
-              />
-              <label for="discrete-clustering" class="rect-label"
-                >Agglomerative Clustering</label
-              >
-            </div>
-
-            <div id="continuous-options" style="display: none">
-              <input
-                type="radio"
-                name="continuous_strategy"
-                id="continuous-standard"
-                class="rect-input"
-                value="partitioning"
-                checked
-              />
-              <label for="continuous-standard" class="rect-label"
-                >Standard Partitioning</label
-              >
-
-              <input
-                type="radio"
-                name="continuous_strategy"
-                id="continuous-clustering"
-                class="rect-input"
-                value="clustering"
-              />
-              <label for="continuous-clustering" class="rect-label"
-                >Agglomerative Clustering</label
-              >
             </div>
 
             <div id="discrete-entropy-options">
-              <label for="discrete_partitioning">Partitioning:</label>
-              <input
-                type="number"
-                id="discrete_partitioning"
-                name="discrete_partitioning"
-              />
+              <div class="inner-discrete-entropy-options">
+                <label for="discrete_partitioning">Partitioning:</label>
+                <input
+                  type="number"
+                  id="discrete_partitioning"
+                  name="discrete_partitioning"
+                />
+              </div>
             </div>
 
             <div id="discrete-clustering-options" style="display: none">

@@ -47,16 +47,16 @@ body {
 .config-sidebar {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  padding: 20px;
+  gap: 20px;
+  padding: 0px 20px 0px 20px;
+
   box-sizing: border-box;
 }
 
 .options-text-box {
   display: flex;
   align-items: center;
-  height: 40px;
-  justify-content: center;
+  justify-content: start;
   font-weight: bold;
 }
 
@@ -222,5 +222,30 @@ iframe#graph-frame {
   gap: 5px;
 }
 
+.inner-discrete-entropy-options {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .discrete-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.discrete-option:nth-child(1) > label {
+  width: 100%;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.discrete-option:nth-child(2) > label {
+  width: 100%;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+.configuration-title {
+  margin-bottom: 0;
+  text-align: center;
 }
