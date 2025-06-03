@@ -17,7 +17,8 @@ class ConfigData():
                  cHypercube=0,
                  cClusterSize=50,
                  cVolumeSize=50,
-                 cDistance="euclidean"
+                 cDistance="euclidean",
+                 advanced = None
                  ):
         self.problemType       = problemType
         self.objectiveType     = objectiveType
@@ -28,11 +29,12 @@ class ConfigData():
         self.dDistance         = dDistance
         self.dMinBound         = dMinBound
         self.cMaxBound         = cMaxBound
-        self.cDimension       = cDimension
+        self.cDimension        = cDimension
         self.cHypercube        = cHypercube
         self.cClusterSize      = cClusterSize
         self.cVolumeSize       = cVolumeSize
         self.cDistance         = cDistance
+        self.advanced = advanced if advanced else AdvancedSettings()
 
     def toDict(self):
         return {
@@ -49,11 +51,13 @@ class ConfigData():
             "cHypercube":       self.cHypercube,
             "cClusterSize":     self.cClusterSize,
             "cVolumeSize":      self.cVolumeSize,
-            "cDistance":        self.cDistance
+            "cDistance":        self.cDistance,
+            "advanced": self.advanced.to_dict() if self.advanced else {}
         }
 
     @classmethod
     def from_dict(cls, d):
+        adv = d.get("advanced", {})
         return cls(
             problemType=d.get("problemType", "discrete"),
             objectiveType=d.get("objectiveType", "minimization"),
@@ -69,4 +73,39 @@ class ConfigData():
             cClusterSize=d.get("cClusterSize", 50),
             cVolumeSize=d.get("cVolumeSize", 50),
             cDistance=d.get("cDistance", "euclidean"),
+            advanced=AdvancedSettings.from_dictionary(adv)
         )
+
+class AdvancedSettings():
+    def __init__(self,
+                 best_solution = "",
+                 nr_of_runs    = -1,
+                 vertex_size   = -1,
+                 arrow_size    = -1,
+                 tree_layout   = False):
+        self.best_solution = best_solution
+        self.nr_of_runs    = nr_of_runs
+        self.vertex_size   = vertex_size
+        self.arrow_size    = arrow_size
+        self.tree_layout   = tree_layout
+
+    def to_dict(self):
+        return {
+            "best_solution" : self.best_solution,
+            "nr_of_runs"    : self.nr_of_runs,
+            "vertex_size"   : self.vertex_size,
+            "arrow_size"    : self.arrow_size,
+            "tree_layout"   : self.tree_layout
+        }
+
+    @classmethod
+    def from_dictionary(cls, d):
+        return cls(
+            best_solution = d.get("best_solution", ""),
+            nr_of_runs    = d.get("nr_of_runs", -1),
+            vertex_size   = d.get("vertex_size", -1),
+            arrow_size    = d.get("arrow_size", -1),
+            tree_layout   = d.get("tree_layout", False)
+        )
+
+

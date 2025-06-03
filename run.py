@@ -1,10 +1,10 @@
 import os
-
 from flask import Flask, request, jsonify, session, render_template, send_from_directory
 from scripts.config import get_config_from_session, get_upload_file_data
 from scripts.partition import apply_partitioning_from_config
 from scripts.visualize import tag_graph_origin, visualize_stn
 from scripts.create import create_stn
+from scripts.structures import AdvancedSettings
 from scripts.structures import ConfigData
 from scripts import settings
 from scripts import create
@@ -41,7 +41,7 @@ def generate_visualization():
 @app.route("/submit", methods=['POST'])
 def submit_config():
     form = request.form
-    print("🔍 Received form data:", dict(form))
+    print("Received form data:", dict(form))
 
     objective_type = form.get("objective_type", "minimization")
     problem_type = "discrete" if form.get("problem_type") == "discrete" else "continuous"
@@ -53,6 +53,14 @@ def submit_config():
         partition_strategy = "clustering"
     else:
         partition_strategy = "partitioning"
+
+    advanced_settings = AdvancedSettings(
+        best_solution=form.get("best_solution", ""),
+        nr_of_runs=int(form.get("nr_of_runs") or -1),
+        vertex_size=int(form.get("vertex_size") or -1),
+        arrow_size=int(form.get("arrow_size") or -1),
+        tree_layout="tree_layout" in form  # checkbox returns 'on' if checked
+    )
 
     configData = ConfigData(
         problemType=problem_type,
@@ -72,6 +80,7 @@ def submit_config():
     )
 
     session["config_data"] = configData.toDict()
+    session["advanced_settings"] = advanced_settings.to_dict()
     return jsonify({"status": "ok"})
 
 @app.route("/display_graph")

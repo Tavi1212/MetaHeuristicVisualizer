@@ -191,6 +191,15 @@ button:hover {
 .collapsible-content {
   padding: 16px;
   animation: fadeIn 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.collapsible-content > div {
+  display: flex;
+  flex-direction: column;
+  gap: 10px
 }
 
 @keyframes fadeIn {
