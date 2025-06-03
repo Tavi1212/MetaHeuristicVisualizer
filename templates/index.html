@@ -28,7 +28,7 @@
             <div>
               <h2 class="options-text-box">Problem Type</h2>
 
-              <div style="display: flex">
+              <div style="display: flex; gap: 30px">
                 <div class="rect-container" style="gap: 0">
                   <input
                     type="radio"
@@ -278,20 +278,52 @@
                   />
                 </div>
 
-                <div>
-                  <label for="tree_layout">Tree Layout:</label>
-                  <input type="checkbox" id="tree_layout" name="tree_layout" />
+                <div style="flex-direction: row">
+                  <label style="display: flex; align-items: center; gap: 8px">
+                    <input
+                      type="checkbox"
+                      id="tree_layout"
+                      name="tree_layout"
+                      class="styled-checkbox"
+                    />
+                    Tree Layout
+                  </label>
                 </div>
               </div>
             </details>
           </div>
-
-          <h2>Algorithms</h2>
-          <div class="container" id="algorithm_list_container"></div>
-          <button type="button" onclick="addAlgorithm()">Add Algorithm</button>
-          <button type="button" onclick="submitAllData()">
-            Generate Graph
-          </button>
+          <div class="config-algorithms">
+            <h2>Algorithms</h2>
+            <div class="algorithm_list_container" id="algorithm_list_container">
+              <div class="algorithm">
+                <div class="name-input-box">
+                  Name: <input type="text" name="name_0" />
+                </div>
+                <div class="color-input-box">
+                  Color:
+                  <input type="color" class="color-picker" name="color_0" />
+                </div>
+                <div class="choose-file-box">
+                  <input type="file" accept=".txt, .csv" name="file_0" />
+                </div>
+                <div class="remove-button-box">
+                  <button class="remove-button">Remove</button>
+                </div>
+              </div>
+            </div>
+            <div class="algoritm-buttons">
+              <button
+                class="btn-outlined"
+                type="button"
+                onclick="addAlgorithm()"
+              >
+                Add Algorithm
+              </button>
+              <button type="button" onclick="submitAllData()">
+                Generate Graph
+              </button>
+            </div>
+          </div>
         </form>
       </div>
 
