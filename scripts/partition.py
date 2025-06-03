@@ -1,9 +1,10 @@
 import math
+import numpy as np
+from itertools import combinations
 import networkx as nx
-from scripts.utils import normalize
+from scripts.structures import ConfigData
 import scripts.utils as utils
 from collections import defaultdict
-from sklearn.cluster import AgglomerativeClustering
 from scipy.spatial.distance import pdist, squareform
 
 
@@ -138,126 +139,6 @@ def estimate_volume_percent(cluster_vectors, domain_size=2):
     total_volume = domain_size ** len(dimensions)
     return (cluster_volume / total_volume) * 100
 
-from scipy.spatial.distance import pdist, squareform
-from sklearn.cluster import AgglomerativeClustering
-
-def apply_agglomerative_clustering(G, max_cluster_percentage=50, max_volume_percentage=50, distance_metric="hamming"):
-    # Assign fixed cluster IDs to start/end nodes
-    for node in G.nodes:
-        node_type = G.nodes[node].get("type")
-        if node_type == "start":
-            G.nodes[node]["cluster"] = "start"
-        elif node_type == "end":
-            G.nodes[node]["cluster"] = "end"
-
-    # Cluster only intermediate nodes
-    intermediates = [n for n in G.nodes if G.nodes[n].get("type") == "intermediate"]
-    if not intermediates:
-        return G
-
-    node_vectors = [utils.parse_vectors_string(n, mode='auto')[0] for n in intermediates]
-
-    # Compute distance matrix
-    dist_fn = get_distance_fn(distance_metric)
-    dist_matrix = squareform(pdist(node_vectors, lambda u, v: dist_fn(u, v)))
-
-    n_clusters = max(1, int((len(intermediates) * max_cluster_percentage) / 100))
-
-    clustering = AgglomerativeClustering(
-        n_clusters=n_clusters,
-        metric='precomputed',
-        linkage='average'
-    )
-    labels = clustering.fit_predict(dist_matrix)
-
-    for node, label in zip(intermediates, labels):
-        G.nodes[node]["cluster"] = label
-
-    for cluster_id in set(labels):
-        cluster_indices = [i for i, lbl in enumerate(labels) if lbl == cluster_id]
-        cluster_nodes = [intermediates[i] for i in cluster_indices]
-        cluster_vectors = [node_vectors[i] for i in cluster_indices]
-
-        volume_pct = estimate_volume_percent(cluster_vectors)
-        if volume_pct <= max_volume_percentage:
-            continue
-
-        # Trim nodes by fitness to reduce cluster volume
-        kept_nodes = trim_cluster_by_fitness(cluster_nodes, cluster_vectors, G, max_volume_percentage)
-        for node in cluster_nodes:
-            if node not in kept_nodes:
-                G.nodes[node]["cluster"] = None  # Unassign cluster
-
-    return G
-
-def collapse_to_supernodes(G):
-    cluster_ids = set(nx.get_node_attributes(G, 'cluster').values())
-    H = nx.DiGraph()
-
-    id_map = {}  # maps int cluster_id to str node ID
-
-    for c in cluster_ids:
-        node_id = f"cluster_{c}"
-        id_map[c] = node_id
-        H.add_node(node_id, label=node_id, size=sum(
-            G.nodes[n].get('count', 1) for n in G.nodes if G.nodes[n]['cluster'] == c
-        ))
-
-    for u, v in G.edges:
-        cu = G.nodes[u]['cluster']
-        cv = G.nodes[v]['cluster']
-        if cu != cv:
-            src = id_map[cu]
-            tgt = id_map[cv]
-            if H.has_edge(src, tgt):
-                H[src][tgt]['weight'] += 1
-            else:
-                H.add_edge(src, tgt, weight=1)
-
-    return H
-
-def apply_general_clustering(G, max_cluster_percentage=50, distance_metric="euclidean", is_discrete=True):
-
-    nodes = list(G.nodes)
-    node_vectors = []
-
-    for node in nodes:
-        parsed = utils.parse_vectors_string(node)
-        flat = parsed[0]
-        # Discrete = categorical characters; Continuous = numeric
-        if is_discrete:
-            node_vectors.append([int(c) if isinstance(c, str) and c.isdigit() else c for c in flat])
-        else:
-            node_vectors.append([float(x) for x in flat])
-
-    dist_fn_map = {
-        "hamming": utils.hamming_distance,
-        "euclidean": utils.euclidean_distance,
-        "manhattan": utils.manhattan_distance
-    }
-
-    distance_metric = distance_metric.lower()
-    if distance_metric not in dist_fn_map:
-        raise ValueError(f"Unsupported distance metric: {distance_metric}")
-    if not is_discrete and distance_metric == "hamming":
-        raise ValueError("Hamming distance is only valid for discrete problems.")
-
-    dist_fn = dist_fn_map[distance_metric]
-    dist_matrix = squareform(pdist(node_vectors, lambda u, v: dist_fn(u, v)))
-    n_clusters = max(1, int((len(nodes) * max_cluster_percentage) / 100))
-    print("Max number of clusters: ", n_clusters)
-
-    clustering = AgglomerativeClustering(
-        n_clusters=n_clusters,
-        metric='precomputed',
-        linkage='average'
-    )
-    labels = clustering.fit_predict(dist_matrix)
-
-    for node, label in zip(nodes, labels):
-        G.nodes[node]['cluster'] = label
-
-    return collapse_to_supernodes(G)
 
 def apply_partitioning_from_config(G, config):
     if config.problemType == "discrete":
@@ -265,12 +146,8 @@ def apply_partitioning_from_config(G, config):
             discrete_shannon_entropy(G, nr=config.dPartitioning)
             return G
         elif config.partitionStrategy == "clustering":
-            return apply_general_clustering(
-                G,
-                max_cluster_percentage=config.dCSize,
-                distance_metric=config.dDistance,
-                is_discrete=True
-            )
+            G = constrained_cluster(G, config)
+            return G
 
     elif config.problemType == "continuous":
         if config.partitionStrategy == "partitioning":
@@ -290,11 +167,134 @@ def apply_partitioning_from_config(G, config):
             )
 
         elif config.partitionStrategy == "clustering":
-            return apply_general_clustering(
-                G,
-                max_cluster_percentage=config.cClusterSize,
-                distance_metric=config.cDistance,
-                is_discrete=False
-            )
+            return constrained_cluster(G, config)
 
     raise ValueError(f"Unsupported configuration: {config.problemType}, {config.partitionStrategy}")
+
+
+def constrained_cluster(G, config: ConfigData):
+    max_cluster_size = config.dCSize
+    max_volume       = config.dVSize
+    distance_metric  = config.dDistance
+
+    intermediates = [n for n in G.nodes if G.nodes[n].get("type") == "intermediate"]
+    if not intermediates:
+        return G
+
+    node_vectors = {n: utils.parse_vectors_string(n, mode='auto')[0] for n in intermediates}
+    nodes = list(node_vectors.keys())
+    vectors = np.array([node_vectors[n] for n in nodes])
+
+    dist_fn = get_distance_fn(distance_metric)
+    dist_matrix = squareform(pdist(vectors, lambda u, v: dist_fn(u, v)))
+
+    clusters = {i: [i] for i in range(len(nodes))}
+    active = set(clusters.keys())
+    idx_map = {i: nodes[i] for i in range(len(nodes))}
+
+    def max_internal_distance(indices):
+        return max(dist_matrix[i][j] for i, j in combinations(indices, 2)) if len(indices) > 1 else 0
+
+    while True:
+        merge_candidates = []
+        active_list = list(active)
+
+        for i in range(len(active_list)):
+            for j in range(i + 1, len(active_list)):
+                ci, cj = active_list[i], active_list[j]
+                merged = clusters[ci] + clusters[cj]
+                if len(merged) > max_cluster_size:
+                    continue
+                if max_internal_distance(merged) > max_volume:
+                    continue
+                merge_candidates.append((ci, cj))
+
+        if not merge_candidates:
+            break
+
+        ci, cj = merge_candidates[0]
+        clusters[ci] += clusters[cj]
+        del clusters[cj]
+        active.remove(cj)
+
+    # Assign cluster labels to nodes
+    for cluster_id, members in enumerate(clusters.values()):
+        for idx in members:
+            node = idx_map[idx]
+            G.nodes[node]["cluster"] = cluster_id
+
+    return G
+
+def collapse_to_supernodes(G, color_attr=None):
+    H = nx.DiGraph()
+    cluster_map = defaultdict(list)
+
+    # Step 1: Collect intermediate nodes into clusters
+    for node in G.nodes:
+        if G.nodes[node].get("type") != "intermediate":
+            continue  # Skip start/end nodes
+        cid = G.nodes[node].get("cluster")
+        if cid is not None:
+            cluster_map[cid].append(node)
+
+    # Step 2: Add start/end nodes as-is
+    for node in G.nodes:
+        node_type = G.nodes[node].get("type")
+        if node_type in ["start", "end"]:
+            color = "#f5e642" if node_type == "start" else "#f54242"
+            H.add_node(node, label=node, type=node_type, size=20, color=color)
+
+    # Step 3: Add supernodes for each cluster
+    for cid, members in cluster_map.items():
+        label = f"cluster_{cid}"
+
+        fitnesses = [G.nodes[n].get("fitness", float("inf")) for n in members]
+        entropies = [G.nodes[n].get("entropy", 0.0) for n in members if "entropy" in G.nodes[n]]
+
+        avg_fitness = sum(fitnesses) / len(fitnesses) if fitnesses else 0
+        min_fitness = min(fitnesses) if fitnesses else 0
+        max_fitness = max(fitnesses) if fitnesses else 0
+        avg_entropy = sum(entropies) / len(entropies) if entropies else 0
+
+        node_size = math.log2(len(members) + 1) * 10
+
+        if color_attr == "fitness":
+            g = int(255 - min(avg_fitness, 1.0) * 255)
+            node_color = f"rgba(100, {g}, 100, 0.8)"
+        elif color_attr == "entropy":
+            r = int(min(avg_entropy, 1.0) * 255)
+            node_color = f"rgba({r}, 100, 100, 0.8)"
+        else:
+            node_color = "gray"
+
+        H.add_node(label,
+                   label=label,
+                   size=node_size,
+                   count=len(members),
+                   avg_fitness=avg_fitness,
+                   fitness_range=(min_fitness, max_fitness),
+                   avg_entropy=avg_entropy,
+                   color=node_color)
+
+    # Step 4: Redirect edges
+    for u, v in G.edges:
+        cu = G.nodes[u].get("cluster")
+        cv = G.nodes[v].get("cluster")
+        type_u = G.nodes[u].get("type")
+        type_v = G.nodes[v].get("type")
+
+        if type_u in ["start", "end"] and type_v == "intermediate":
+            target_cluster = f"cluster_{cv}"
+            H.add_edge(u, target_cluster, weight=1)
+        elif type_v in ["start", "end"] and type_u == "intermediate":
+            source_cluster = f"cluster_{cu}"
+            H.add_edge(source_cluster, v, weight=1)
+        elif type_u == "intermediate" and type_v == "intermediate" and cu != cv:
+            u_cluster = f"cluster_{cu}"
+            v_cluster = f"cluster_{cv}"
+            if H.has_edge(u_cluster, v_cluster):
+                H[u_cluster][v_cluster]["weight"] += 1
+            else:
+                H.add_edge(u_cluster, v_cluster, weight=1)
+
+    return H
