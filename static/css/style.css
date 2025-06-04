@@ -148,7 +148,6 @@ button:hover {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  align-items: center;
   justify-content: space-between;
   background-color: #2f2f2f;
   padding: 10px;
@@ -245,7 +244,6 @@ iframe#graph-frame {
 .config-algorithms {
   display: flex;
   flex-direction: column;
-  padding: 0px 20px 0px 20px;
   box-sizing: border-box;
 }
 
@@ -395,7 +393,6 @@ input[type="checkbox"].styled-checkbox:focus {
 .collapsible-body {
   overflow: hidden;
   transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s;
-  max-height: 500px;
   opacity: 1;
 }
 
