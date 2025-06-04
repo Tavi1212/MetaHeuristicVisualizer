@@ -123,10 +123,11 @@ function addAlgorithm() {
   let removeButtonBox = document.createElement("div");
   let removeButton = document.createElement("button");
   removeButtonBox.classList.add("remove-button-box");
+  removeButton.type = "button";
   removeButton.innerText = "Remove";
   removeButton.classList.add("remove-button");
   removeButton.onclick = function () {
-    newAlgorithm.remove();
+    removeAlgorithmBtnClick(this);
   };
 
   nameInputBox.appendChild(nameLabel);
@@ -296,4 +297,16 @@ iframe.addEventListener("load", function () {
 function toggleCollapsible(header) {
   const section = header.closest(".collapsible-section");
   section.classList.toggle("collapsed");
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("collapsed");
+}
+
+function removeAlgorithmBtnClick(elt) {
+  const container = document.getElementById("algorithm_list_container");
+  if (container.children.length > 1) {
+    elt.closest(".algorithm").remove();
+  }
 }
