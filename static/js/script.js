@@ -292,3 +292,8 @@ iframe.addEventListener("load", function () {
   // Now show the iframe
   iframe.style.visibility = "visible";
 });
+
+function toggleCollapsible(header) {
+  const section = header.closest(".collapsible-section");
+  section.classList.toggle("collapsed");
+}
