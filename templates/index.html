@@ -19,8 +19,17 @@
       <h1 class="titlu-bengos">Metaheuristic Visualizer</h1>
     </div>
 
-    <div class="main">
-      <div class="sidebar">
+    <div class="main" id="main">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-toggle-wrapper">
+          <button
+            type="button"
+            class="sidebar-toggle"
+            onclick="toggleSidebar()"
+          >
+            <span class="chevron-right">›</span>
+          </button>
+        </div>
         <h1 class="configuration-title">Configuration</h1>
 
         <form id="problem-config-form" method="POST" action="/submit">
@@ -368,13 +377,13 @@
       </div>
 
       <div class="content">
-        <iframe
+        <!-- <iframe
           id="graph-frame"
           style="visibility: hidden; height: 100%"
           src="{{ url_for('display_graph') }}"
           width="100%"
           frameborder="0"
-        ></iframe>
+        ></iframe> -->
       </div>
 
       <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>

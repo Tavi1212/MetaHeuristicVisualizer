@@ -299,6 +299,11 @@ function toggleCollapsible(header) {
   section.classList.toggle("collapsed");
 }
 
+function toggleSidebar() {
+  const sidebar = document.getElementById("sidebar");
+  sidebar.classList.toggle("collapsed");
+}
+
 function removeAlgorithmBtnClick(elt) {
   const container = document.getElementById("algorithm_list_container");
   if (container.children.length > 1) {

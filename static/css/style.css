@@ -27,17 +27,24 @@ body {
 
 .main {
   height: calc(100vh - 80px);
-  display: grid;
-  grid-template-columns: 400px 1fr;
+  display: flex;
 }
 
 .sidebar {
   background-color: #2a2a2a;
   height: 100%;
   overflow-y: auto;
+  position: relative;
+  width: 400px;
+  min-width: 400px;
+  max-width: 400px;
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+    max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .content {
+  width: 100%;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -423,4 +430,61 @@ input[type="checkbox"].styled-checkbox:focus {
 
 .collapsible-menu[open] summary {
   border-bottom: 1px solid transparent;
+}
+
+.chevron-right {
+  font-size: 1.5em;
+  color: var(--accent, #444);
+  transition: transform 0.2s;
+  display: inline-block;
+  vertical-align: middle;
+  user-select: none;
+  pointer-events: none;
+}
+
+.sidebar.collapsed .chevron-right {
+  transform: rotate(180deg);
+}
+
+.sidebar.collapsed {
+  width: 50px;
+  min-width: 50px;
+  max-width: 50px;
+  overflow-x: hidden;
+}
+
+.sidebar.collapsed h1,
+.sidebar.collapsed form {
+  display: none;
+}
+
+.sidebar-toggle-wrapper {
+  right: 20px;
+  top: 20px;
+  position: absolute;
+}
+
+.sidebar-toggle {
+  background: var(--sidebar-bg, #f8f9fa);
+  border-radius: 10px;
+  padding: 5px;
+  margin-top: 0;
+  aspect-ratio: 1/1;
+}
+
+.main.collapsed form,
+.main.collapsed h1 {
+  display: none;
+}
+
+.main.collapsed .sidebar-toggle-wrapper {
+  right: 0;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.main.collapsed .sidebar-toggle {
+  transform: rotate(180deg);
 }
