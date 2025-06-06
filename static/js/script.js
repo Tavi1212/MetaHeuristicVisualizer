@@ -25,8 +25,13 @@ discreteBtn.addEventListener("change", () => {
     discreteDiv.style.display = "block";
     continuousDiv.style.display = "none";
 
-    discreteShannonBtn.checked = true;
+    document.querySelectorAll("#discrete-options input").forEach(el => el.disabled = false);
+    document.querySelectorAll("#discrete-options select").forEach(el => el.disabled = false);
+    // Disable continuous inputs
+    document.querySelectorAll("#continuous-options input").forEach(el => el.disabled = true);
+    document.querySelectorAll("#continuous-options select").forEach(el => el.disabled = true);
 
+    discreteShannonBtn.checked = true;
     discreteShannon.style.display = "block";
     discreteClustering.style.display = "none";
     continuousStd.style.display = "none";
@@ -39,8 +44,13 @@ continuousBtn.addEventListener("change", () => {
     continuousDiv.style.display = "block";
     discreteDiv.style.display = "none";
 
-    continuousStdBtn.checked = true;
+    document.querySelectorAll("#continuous-options input").forEach(el => el.disabled = false);
+    document.querySelectorAll("#continuous-options select").forEach(el => el.disabled = false);
 
+    document.querySelectorAll("#discrete-options input").forEach(el => el.disabled = true);
+    document.querySelectorAll("#discrete-options select").forEach(el => el.disabled = true);
+
+    continuousStdBtn.checked = true;
     discreteShannon.style.display = "none";
     discreteClustering.style.display = "none";
     continuousStd.style.display = "block";

@@ -11,7 +11,7 @@ class ConfigData():
                  dCSize=50,
                  dVSize=25,
                  dDistance="hamming",
-                 dMinBound=-100,
+                 cMinBound=-100,
                  cMaxBound=100,
                  cDimension=3,
                  cHypercube=0,
@@ -27,7 +27,7 @@ class ConfigData():
         self.dCSize            = dCSize
         self.dVSize            = dVSize
         self.dDistance         = dDistance
-        self.dMinBound         = dMinBound
+        self.cMinBound         = cMinBound
         self.cMaxBound         = cMaxBound
         self.cDimension        = cDimension
         self.cHypercube        = cHypercube
@@ -45,7 +45,7 @@ class ConfigData():
             "dCSize":            self.dCSize,
             "dVSize":            self.dVSize,
             "dDistance":         self.dDistance,
-            "dMinBound":        self.dMinBound,
+            "dMinBound":        self.cMinBound,
             "cMaxBound":        self.cMaxBound,
             "cDimension":       self.cDimension,
             "cHypercube":       self.cHypercube,
@@ -66,7 +66,7 @@ class ConfigData():
             dCSize=d.get("dCSize", 50),
             dVSize=d.get("dVSize", 25),
             dDistance=d.get("dDistance", "hamming"),
-            dMinBound=d.get("dMinBound", -100),
+            cMinBound=d.get("cMinBound", -100),
             cMaxBound=d.get("cMaxBound", 100),
             cDimension=d.get("cDimension", 3),
             cHypercube=d.get("cHypercube", 0),

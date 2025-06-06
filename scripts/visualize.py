@@ -1,7 +1,8 @@
 import json
 import networkx as nx
+from scripts.utils import add_best
 from scripts.structures import ConfigData, AdvancedSettings
-from scripts.utils import normalize, adjust_color_lightness
+from scripts.utils import normalize, adjust_color_lightness, add_best
 from pyvis.network import Network
 
 
@@ -119,6 +120,7 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     merged = nx.DiGraph()
     node_origins = {}
 
+    #Merge the graphs, keeping track of each node's origin algorithm, on basis of it's orgin color
     for G in graphs:
         merged = nx.compose(merged, G)
         for node in G.nodes:
@@ -131,37 +133,46 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
 
     if advanced.tree_layout:
         apply_tree_layout(net, direction="UD")
+    if advanced.best_solution != "":
+        add_best(merged, advanced.best_solution)
 
     shape_map = {
-        "start": "square",
-        "end": "diamond",
-        "intermediate": "dot"
+        "start"       : "square",
+        "end"         : "diamond",
+        "intermediate": "dot",
+        "best"        : "star"
     }
 
     fixed_colors = {
         "start": "#f5e642",
-        "end": "#f54242"
+        "end"  : "#f54242",
+        "best" : "#f5d000"
     }
 
+    #Extract the counts and fitnesses for each node in the merged STN
     counts = [attrs.get("count", 1) for _, attrs in merged.nodes(data=True) if attrs.get("type") == "intermediate"]
     fitnesses = [attrs.get("fitness", 0) for _, attrs in merged.nodes(data=True) if attrs.get("type") == "intermediate"]
+
+    #Extract the minimum and maximum node counts and fitnesses for determining node size and shade
     min_count, max_count = min(counts, default=1), max(counts, default=1)
     min_fit, max_fit = min(fitnesses, default=0), max(fitnesses, default=1)
 
+    #Compute the node size range
     base_size = advanced.vertex_size if advanced.vertex_size > 0 else 20
     max_size = base_size + 40
     arrow_scale = advanced.arrow_size if advanced.arrow_size > 0 else 1
 
+
     has_merged_nodes = False
     for node, attrs in merged.nodes(data=True):
         node_type = attrs.get("type", "intermediate")
-        shape = attrs.get("shape", shape_map.get(node_type, "dot"))
+        shape = shape_map.get(node_type, "dot")
         fitness = attrs.get("fitness", 0)
         title = f"ID: {node}\nFitness: {fitness:.4f}"
 
         if node_type in fixed_colors:
             color = attrs.get("origin_color", fixed_colors[node_type])
-            size = base_size  # fixed size for start/end nodes
+            size = base_size
         else:
             count = attrs.get("count", 1)
             size = normalize(count, min_count, max_count, base_size, max_size)
@@ -175,24 +186,10 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
             else:
                 color = adjust_color_lightness(base_color, lightness)
 
-            color = attrs.get("origin_color", color)
-
-        net.add_node(
-            node,
-            label=" ",
-            title=title,
-            color=color,
-            shape=shape,
-            size=size
-        )
+        net.add_node(node, label=" ", title=title, color=color, shape=shape, size=size)
 
     for u, v, attrs in merged.edges(data=True):
-        net.add_edge(
-            u,
-            v,
-            color=attrs.get("color", "black"),
-            value=attrs.get("weight", 1) * arrow_scale
-        )
+        net.add_edge(u, v, color=attrs.get("color", "black"), value=attrs.get("weight", 1) * arrow_scale)
 
     net.save_graph(output_file)
 

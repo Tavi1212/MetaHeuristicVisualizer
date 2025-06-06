@@ -47,7 +47,7 @@ def submit_config():
     objective_type = form.get("objective_type", "minimization")
     problem_type = "discrete" if form.get("problem_type") == "discrete" else "continuous"
 
-    strat_key = form.get("discrete_strategy") or form.get("continuous_strategy")
+    strat_key = form.get("strategy")
     if strat_key == "shannon":
         partition_strategy = "shannon"
     elif strat_key == "clustering":
@@ -60,18 +60,18 @@ def submit_config():
         nr_of_runs=int(form.get("nr_of_runs") or -1),
         vertex_size=int(form.get("vertex_size") or -1),
         arrow_size=int(form.get("arrow_size") or -1),
-        tree_layout="tree_layout" in form  # checkbox returns 'on' if checked
+        tree_layout="tree_layout" in form
     )
 
     configData = ConfigData(
         problemType=problem_type,
         objectiveType=objective_type,
         partitionStrategy=partition_strategy,
-        dPartitioning=int(form.get("disc_partitioning") or 0),
+        dPartitioning=int(form.get("discrete_partitioning") or 0),
         dCSize=int(form.get("disc_cluster_size") or 50),
         dVSize=int(form.get("disc_partitioning") or 25),
         dDistance=form.get("disc_distance_metric", "hamming"),
-        dMinBound=int(form.get("min_bound") or -100),
+        cMinBound=int(form.get("min_bound") or -100),
         cMaxBound=int(form.get("max_bound") or 100),
         cDimension=int(form.get("n_dimensions") or 3),
         cHypercube=int(form.get("hyper_cube") or 0),

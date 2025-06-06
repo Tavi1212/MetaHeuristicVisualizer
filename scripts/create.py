@@ -8,6 +8,7 @@ import networkx as nx
 #Count:   counts how many times the solution was found in all runs
 def create_stn(infile):
     df = pd.read_table(infile, sep=r"\s+")
+    df["Run"] = pd.to_numeric(df["Run"], errors="coerce")
 
     if "Run" not in df.columns:
         df["Run"] = 0

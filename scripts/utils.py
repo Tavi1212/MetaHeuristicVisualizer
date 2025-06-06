@@ -1,7 +1,10 @@
 import ast
 import math
 import colorsys
+import networkx as nx
 from collections import Counter
+from flatbuffers.flexbuffers import String
+
 
 def normalize(value, min_val, max_val, scaled_min=10, scaled_max=50):
     if min_val == max_val:
@@ -10,26 +13,36 @@ def normalize(value, min_val, max_val, scaled_min=10, scaled_max=50):
 
 
 def adjust_color_lightness(hex_color, lightness_percent):
-    lightness_percent = max(30, min(90, lightness_percent))  # Clamp for visibility
+    lightness_percent = max(30, min(90, lightness_percent))
 
     # Convert hex to RGB
     hex_color = hex_color.lstrip("#")
     r, g, b = [int(hex_color[i:i+2], 16) / 255.0 for i in (0, 2, 4)]
 
-    # RGB → HLS, update lightness, then HLS → RGB
     h, l, s = colorsys.rgb_to_hls(r, g, b)
     l = lightness_percent / 100.0
     r, g, b = colorsys.hls_to_rgb(h, l, s)
 
-    # RGB → hex
     return "#{:02x}{:02x}{:02x}".format(int(r * 255), int(g * 255), int(b * 255))
 
-def shannon_entropy_string(s):
-    counts = Counter(s)
-    total = len(s)
+
+def add_best(G: nx.DiGraph, best: str):
+    if best in G:
+        G.nodes[best]["type"] = "best"
+    else:
+        G.add_node(best, type="best")
+
+
+def shannon_entropy_vector(vec):
+    if not isinstance(vec, (list, tuple)):
+        vec = list(vec)
+    if not vec:
+        return 0.0
+    counts = Counter(vec)
+    total = len(vec)
     probabilities = [count / total for count in counts.values()]
-    entropy = -sum(p * math.log2(p) for p in probabilities if p > 0)
-    return entropy
+    return -sum(p * math.log2(p) for p in probabilities if p > 0)
+
 
 def remove_node_between_two(G, node):
     if node not in G:
@@ -37,7 +50,6 @@ def remove_node_between_two(G, node):
     preds = list(G.predecessors(node))
     succs = list(G.successors(node))
 
-    # Add edges from each pred to each succ with weight = avg or 1
     for u in preds:
         for v in succs:
             if u != v:  # avoid self-loops
@@ -87,7 +99,6 @@ def parse_vectors_string(s, mode='auto'):
                 return parse_vectors_string(s, mode='hex')
             except Exception:
                 pass
-        # Try float
         try:
             return parse_vectors_string(s, mode='float')
         except Exception:
@@ -102,6 +113,45 @@ def parse_vectors_string(s, mode='auto'):
         raise ValueError(f"Unknown parse mode: {mode}")
 
 
+def parse_discrete_solutions(s, mode='auto'):
+    if mode == 'binary':
+        if not all(c in '01' for c in s):
+            raise ValueError("Non-binary character found in binary mode")
+        return [[int(c) for c in s]]
+
+    elif mode == 'categorical':
+        return [[c for c in s]]
+
+    elif mode == 'permutation':
+        try:
+            parsed = ast.literal_eval(s)
+            if isinstance(parsed, list):
+                return [parsed]
+            else:
+                raise ValueError("Permutation must be a list")
+        except Exception as e:
+            raise ValueError(f"Invalid permutation format: {e}")
+
+    elif mode == 'auto':
+        # Try binary first (fast and avoids int misinterpretation)
+        if all(c in '01' for c in s):
+            return [[int(c) for c in s]]
+
+        # Try permutation
+        try:
+            parsed = ast.literal_eval(s)
+            if isinstance(parsed, list):
+                return [parsed]
+        except Exception:
+            pass
+
+        # Fallback to categorical
+        return [[c for c in s]]
+
+    else:
+        raise ValueError(f"Unknown parse mode: {mode}")
+
+
 def hamming_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Solutions need to be the same length")
@@ -110,14 +160,97 @@ def hamming_distance(v1, v2):
 def euclidean_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Vectors must be of equal length")
-    return math.sqrt(sum((a - b) ** 2 for a, b in zip(v1, v2)))
+    try:
+        return math.sqrt(sum((float(a) - float(b)) ** 2 for a, b in zip(v1, v2)))
+    except ValueError as e:
+        raise TypeError("Euclidean distance requires numeric vectors") from e
 
 def manhattan_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Vectors must be of equal length")
-    return sum(abs(a - b) for a, b in zip(v1, v2))
+    try:
+        return sum(abs(float(a) - float(b)) for a, b in zip(v1, v2))
+    except (ValueError, TypeError):
+        raise TypeError("Manhattan distance requires numeric inputs")
+
+def get_valid_distance_fn(distance_type: str, solution_type: str):
+    if distance_type == "hamming":
+        return hamming_distance
+    elif distance_type == "euclidean":
+        if solution_type not in ("binary", "real", "integer"):
+            raise ValueError(f"Euclidean distance is invalid for {solution_type}")
+        return euclidean_distance
+    elif distance_type == "manhattan":
+        if solution_type not in ("binary", "real", "integer"):
+            raise ValueError(f"Manhattan distance is invalid for {solution_type}")
+        return manhattan_distance
+    else:
+        raise ValueError(f"Unsupported distance type: {distance_type}")
 
 def compute_distance(sol1, sol2, distance_fn):
     if len(sol1) != len(sol2):
-        raise ValueError("Solutions must contain the same number of subvectors")
-    return sum(distance_fn(v1, v2) for v1, v2 in zip(sol1, sol2))
+        raise ValueError("Vectors must be of equal length")
+    return distance_fn(sol1, sol2)
+
+def sol_to_vector(sol: str):
+    try:
+        parsed = ast.literal_eval(sol)
+        if isinstance(parsed, list):
+            return parsed
+        elif isinstance(parsed, str):
+            return list(parsed)  # e.g. "'ABCD'" → ['A','B','C','D']
+        else:
+            raise ValueError  # force fallback
+    except (ValueError, SyntaxError):
+        return list(sol)  # fallback: treat raw string as character vector
+
+def is_binary_vector(vec):
+    if not isinstance(vec, list):
+        return False
+    return all(str(x) in ('0', '1') for x in vec)
+
+def is_permutation_vector(vec):
+    if not isinstance(vec, list):
+        return False
+    if len(vec) != len(set(vec)):
+        return False
+    if not all(isinstance(x, (int, str)) for x in vec):
+        return False
+    return True
+
+def detect_solution_type(vec):
+    if is_binary_vector(vec):
+        return "binary"
+    elif is_permutation_vector(vec):
+        return "permutation"
+    else:
+        return "categorical"
+
+
+def are_permutations_of_same_set(vectors):
+    if not vectors:
+        return True  # empty list is trivially valid
+
+    reference_set = set(vectors[0])
+    reference_length = len(vectors[0])
+
+    for vec in vectors[1:]:
+        if len(vec) != reference_length:
+            return False  # not same length
+        if set(vec) != reference_set:
+            return False  # not same elements
+        if len(set(vec)) != len(vec):
+            return False  # duplicate in current vec
+
+    return True
+
+def is_distance_applicable(distance, encoding):
+    if distance == "hamming":
+        return True
+    elif distance in ("euclidean", "manhattan"):
+        return encoding == "binary"
+    return False
+
+def is_entropy_applicable(solution_type: str):
+    solution_type = solution_type.lower()
+    return solution_type in ("binary", "categorical")
