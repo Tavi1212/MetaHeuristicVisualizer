@@ -209,13 +209,17 @@ iframe#graph-frame {
   border: none;
 }
 
-.inner-discrete-clustering-options {
+.inner-discrete-clustering-options,
+.inner-continuous-standard-options,
+.inner-continuous-clustering-options {
   display: flex;
   flex-direction: column;
   gap: 15px;
 }
 
-.inner-discrete-clustering-options > div {
+.inner-discrete-clustering-options > div,
+.inner-continuous-standard-options > div,
+.inner-continuous-clustering-options > div {
   display: flex;
   flex-direction: column;
   gap: 5px;
