@@ -9,10 +9,7 @@ from scipy.spatial.distance import pdist, squareform
 
 
 def discrete_shannon_entropy(G, config):
-
-    sample_node = next(iter(G.nodes))
-    vec = utils.sol_to_vector(sample_node)
-    solution_type = utils.detect_solution_type(vec)
+    solution_type = utils.detect_solution_type_on_sample(G)
     if not utils.is_entropy_applicable(solution_type):
         print("Warning: Shannon entropy does not make sense for the problem type")
         return

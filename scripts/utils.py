@@ -152,6 +152,23 @@ def parse_discrete_solutions(s, mode='auto'):
         raise ValueError(f"Unknown parse mode: {mode}")
 
 
+def parse_continuous_solution(s):
+    try:
+        parsed = ast.literal_eval(s)
+
+        # Single number
+        if isinstance(parsed, (int, float)):
+            return [float(parsed)]
+
+        if isinstance(parsed, list) and all(isinstance(x, (int, float)) for x in parsed):
+            return [float(x) for x in parsed]
+
+        raise ValueError("Invalid continuous solution structure")
+
+    except Exception:
+        raise ValueError(f"Failed to parse as continuous solution: {s}")
+
+
 def hamming_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Solutions need to be the same length")
@@ -225,6 +242,23 @@ def detect_solution_type(vec):
         return "permutation"
     else:
         return "categorical"
+
+def detect_solution_type_on_sample(G, sample_size=10):
+    intermediates = [n for n in G.nodes if G.nodes[n].get("type") == "intermediate"]
+    sampled = intermediates[:sample_size]
+
+    permutation_count = 0
+
+    for node in sampled:
+        vec = sol_to_vector(node)
+        if is_binary_vector(vec):
+            return "binary"
+        if is_permutation_vector(vec):
+            permutation_count += 1
+
+    if permutation_count == sample_size:
+        return "permutation"
+    return "categorical"
 
 
 def are_permutations_of_same_set(vectors):

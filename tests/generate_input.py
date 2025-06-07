@@ -56,8 +56,8 @@ def normalize_vector(vec):
     ]
 
 # 4. Aplică normalizarea pe vectori
-final_df["Solution1"] = final_df["Solution1"].apply(normalize_vector)
-final_df["Solution2"] = final_df["Solution2"].apply(normalize_vector)
+# final_df["Solution1"] = final_df["Solution1"].apply(normalize_vector)
+# final_df["Solution2"] = final_df["Solution2"].apply(normalize_vector)
 
 # === (Opțional) Normalizare fitness ===
 # Dezactivează dacă nu vrei
@@ -67,12 +67,16 @@ final_df["Solution2"] = final_df["Solution2"].apply(normalize_vector)
 # final_df["Fitness2"] = 100 * (final_df["Fitness2"] - min_fitness) / (max_fitness - min_fitness)
 
 # Scrie în fișier
-with open("../input/stn_input1.txt", "w") as f:
+with open("../input/stn_input2.txt", "w") as f:
     f.write("Run\tFitness1\tSolution1\tFitness2\tSolution2\n")
     for _, row in final_df.iterrows():
         run = int(row["Run"])
-        fitness1 = f"{row['Fitness1']:.6f}"
-        fitness2 = f"{row['Fitness2']:.6f}"
-        solution1 = "[" + ",".join(f"{x:.6f}" for x in row["Solution1"]) + "]"
-        solution2 = "[" + ",".join(f"{x:.6f}" for x in row["Solution2"]) + "]"
+        # fitness1 = f"{row['Fitness1']:.6f}"
+        # fitness2 = f"{row['Fitness2']:.6f}"
+        #solution1 = "[" + ",".join(f"{x:.6f}" for x in row["Solution1"]) + "]"
+        #solution2 = "[" + ",".join(f"{x:.6f}" for x in row["Solution2"]) + "]"
+        fitness1 = f"{row['Fitness1']:.16e}"
+        fitness2 = f"{row['Fitness2']:.16e}"
+        solution1 = "[" + ",".join(str(x) for x in row["Solution1"]) + "]"
+        solution2 = "[" + ",".join(str(x) for x in row["Solution2"]) + "]"
         f.write(f"{run}\t{fitness1}\t{solution1}\t{fitness2}\t{solution2}\n")

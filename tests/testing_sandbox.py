@@ -1,70 +1,81 @@
-import ast
-import math
+from typing import final
 
-def sol_to_vector(sol: str):
-    try:
-        parsed = ast.literal_eval(sol)
-        if isinstance(parsed, list):
-            return parsed
-        elif isinstance(parsed, str):
-            return list(parsed)  # e.g. "'ABCD'" → ['A','B','C','D']
-        else:
-            raise ValueError  # force fallback
-    except (ValueError, SyntaxError):
-        return list(sol)  # fallback: treat raw string as character vector
-
-def is_binary_vector(vec):
-    if not isinstance(vec, list):
-        return False
-    return all(str(x) in ('0', '1') for x in vec)
-
-def is_permutation_vector(vec):
-    if not isinstance(vec, list):
-        return False
-    if len(vec) != len(set(vec)):
-        return False
-    if not all(isinstance(x, (int, str)) for x in vec):
-        return False
-    return True
-
-def are_permutations_of_same_set(vectors):
-    if not vectors:
-        return True  # empty list is trivially valid
-
-    reference_set = set(vectors[0])
-    reference_length = len(vectors[0])
-
-    for vec in vectors[1:]:
-        if len(vec) != reference_length:
-            return False  # not same length
-        if set(vec) != reference_set:
-            return False  # not same elements
-        if len(set(vec)) != len(vec):
-            return False  # duplicate in current vec
-
-    return True
-
-def is_distance_aplicable(distance, encoding):
-    if distance == "hamming":
-        return True
-    elif distance in ("euclidean", "manhattan"):
-        return encoding == "binary"
-    return False
-
-def is_entropy_applicable(solution_type: str):
-    solution_type = solution_type.lower()
-    return solution_type in ("binary", "categorical")
+from pyvis.network import Network
+import matplotlib.pyplot as plt
+from scripts.structures import ConfigData, AdvancedSettings
+from scripts.clustering import agglomerative_clustering_with_volume_constraints
+from scripts.create import create_stn
+from matplotlib import colormaps
+import webbrowser
+import itertools
+import random
 
 
-def euclidean_distance(v1, v2):
-    if len(v1) != len(v2):
-        raise ValueError("Vectors must be of equal length")
+def visualize_clusters(final_clusters, output_path="clusters.html", min_cluster_size=50):
+    net = Network(height="800px", width="100%", notebook=False)
 
-    try:
-        return math.sqrt(sum((float(a) - float(b)) ** 2 for a, b in zip(v1, v2)))
-    except ValueError as e:
-        raise TypeError("Euclidean distance requires numeric vectors") from e
+    # Normalize cluster sizes to [20, 80]
+    raw_sizes = [len(c) for c in final_clusters]
+    min_raw, max_raw = min(raw_sizes), max(raw_sizes)
 
+    def normalize_size(raw):
+        if max_raw == min_raw:
+            return 50
+        return 20 + (raw - min_raw) / (max_raw - min_raw) * 60  # maps to [20, 80]
+
+    # Add one node per cluster
+    cluster_nodes = []
+    for i, cluster in enumerate(final_clusters):
+        size = normalize_size(len(cluster))
+        color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
+        label = f"Cluster {i + 1}\nSize: {len(cluster)}"
+        net.add_node(i, label=label, size=size, color=color)
+        cluster_nodes.append((i, set(cluster)))  # (cluster_id, node set)
+
+    # Optional: add edges between clusters if original graph is provided
+    if G:
+        for i, (id_a, nodes_a) in enumerate(cluster_nodes):
+            for j, (id_b, nodes_b) in enumerate(cluster_nodes):
+                if i >= j:
+                    continue
+                if any(G.has_edge(u, v) for u in nodes_a for v in nodes_b):
+                    net.add_edge(id_a, id_b)
+
+    net.show(output_path, notebook=False)
+
+input_path = "../input/stn_input2.txt"
+output_path = "graph_testing.html"
+
+config = ConfigData(
+    problemType="continuous",
+    objectiveType="minimization",
+    partitionStrategy="clustering",
+    dPartitioning=0,
+    dCSize=0,
+    dVSize=0,
+    dDistance="",
+    cMinBound=0,
+    cMaxBound=0,
+    cDimension=0,
+    cHypercube=0,
+    cClusterSize=50,
+    cVolumeSize=25,
+    cDistance="euclidean"
+)
+
+advanced = AdvancedSettings(
+    best_solution="",
+    nr_of_runs=-1,
+    vertex_size=20,
+    arrow_size=1,
+    tree_layout=False
+)
+
+G = create_stn(input_path)
+
+final_clusters = agglomerative_clustering_with_volume_constraints(G, config)
+print(final_clusters)
+visualize_clusters(final_clusters)
 
 
 
