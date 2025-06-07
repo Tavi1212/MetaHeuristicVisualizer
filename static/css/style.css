@@ -497,3 +497,116 @@ input[type="checkbox"].styled-checkbox:focus {
 .main.collapsed .sidebar-toggle {
   transform: rotate(180deg);
 }
+
+/* Batman-style bright slider with dark thumb */
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  max-width: 220px;
+  height: 8px;
+  background: linear-gradient(90deg, #ffe066 0%, #ffbe00 100%);
+  border-radius: 5px;
+  outline: none;
+  margin: 12px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s;
+  position: relative;
+}
+
+input[type="range"]:hover {
+  background: linear-gradient(90deg, #fff700 0%, #ffbe00 100%);
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 24px;
+  height: 24px;
+  margin-top: -8px; /* Vertically center the thumb */
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 40%, #222 70%, #111 100%);
+  border: 3px solid #ffe066;
+  box-shadow: 0 2px 12px #000a, 0 0 0 2px #ffe066 inset;
+  cursor: pointer;
+  transition: border 0.2s, background 0.2s;
+}
+
+input[type="range"]:hover::-webkit-slider-thumb {
+  background: radial-gradient(circle at 60% 40%, #333 70%, #111 100%);
+  border: 3px solid #fff700;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 40%, #222 70%, #111 100%);
+  border: 3px solid #ffe066;
+  box-shadow: 0 2px 12px #000a, 0 0 0 2px #ffe066 inset;
+  cursor: pointer;
+  transition: border 0.2s, background 0.2s;
+}
+
+input[type="range"]:hover::-moz-range-thumb {
+  background: radial-gradient(circle at 60% 40%, #333 70%, #111 100%);
+  border: 3px solid #fff700;
+}
+
+input[type="range"]::-ms-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 60% 40%, #222 70%, #111 100%);
+  border: 3px solid #ffe066;
+  box-shadow: 0 2px 12px #000a, 0 0 0 2px #ffe066 inset;
+  cursor: pointer;
+  transition: border 0.2s, background 0.2s;
+}
+
+input[type="range"]:hover::-ms-thumb {
+  background: radial-gradient(circle at 60% 40%, #333 70%, #111 100%);
+  border: 3px solid #fff700;
+}
+
+/* Track styles remain unchanged */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 8px;
+  border-radius: 5px;
+  background: linear-gradient(90deg, #ffe066 0%, #ffbe00 100%);
+}
+
+input[type="range"]::-ms-fill-lower {
+  background: #ffe066;
+  border-radius: 5px;
+}
+input[type="range"]::-ms-fill-upper {
+  background: #ffbe00;
+  border-radius: 5px;
+}
+
+input[type="range"]:focus {
+  outline: none;
+}
+
+input[type="range"]:focus::-webkit-slider-thumb {
+  box-shadow: 0 0 0 6px #ffe06655;
+}
+
+input[type="range"]:focus::-ms-thumb {
+  box-shadow: 0 0 0 6px #ffe06655;
+}
+
+input[type="range"]:focus::-moz-range-thumb {
+  box-shadow: 0 0 0 6px #ffe06655;
+}
+
+input[type="range"]::-ms-tooltip {
+  display: none;
+}
+
+/* For Firefox */
+input[type="range"]::-moz-range-track {
+  height: 8px;
+  background: linear-gradient(90deg, #ffe066 0%, #ffbe00 100%);
+  border-radius: 5px;
+}
