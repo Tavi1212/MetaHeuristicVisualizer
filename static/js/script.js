@@ -336,3 +336,88 @@ function removeAlgorithmBtnClick(elt) {
     elt.closest(".algorithm").remove();
   }
 }
+
+function downloadFormAsJSON() {
+  const form = document.getElementById("problem-config-form");
+  const formData = new FormData(form);
+  // Also include unchecked checkboxes and radio buttons
+  form.querySelectorAll("input[type=checkbox]:not(:checked)").forEach((cb) => {
+    if (!formData.has(cb.name)) formData.set(cb.name, false);
+  });
+  form.querySelectorAll("input[type=checkbox]:checked").forEach((cb) => {
+    formData.set(cb.name, true);
+  });
+
+  // For radio buttons, ensure only the checked value is included
+  form.querySelectorAll("input[type=radio]").forEach((rb) => {
+    if (rb.checked) formData.set(rb.name, rb.value);
+  });
+
+  // For selects, get their value
+  form.querySelectorAll("select").forEach((sel) => {
+    formData.set(sel.name, sel.value);
+  });
+
+  // For all inputs, get their value (including text, number, range)
+  form
+    .querySelectorAll("input[type=text],input[type=number],input[type=range]")
+    .forEach((inp) => {
+      formData.set(inp.name, inp.value);
+    });
+
+  // Build JSON object
+  const obj = {};
+  for (const [key, value] of formData.entries()) {
+    obj[key] = value;
+  }
+
+  // Download as JSON file
+  const blob = new Blob([JSON.stringify(obj, null, 2)], {
+    type: "application/json",
+  });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "config.json";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function uploadFormFromJSON() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "application/json";
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      alert("Invalid JSON file.");
+      return;
+    }
+    const form = document.getElementById("problem-config-form");
+    for (const [key, value] of Object.entries(data)) {
+      const elements = form.querySelectorAll(`[name="${key}"]`);
+      elements.forEach((el) => {
+        if (el.type === "checkbox") {
+          el.checked = value === true || value === "true";
+        } else if (el.type === "radio") {
+          el.checked = el.value == value;
+        } else if (el.tagName === "SELECT") {
+          el.value = value;
+        } else {
+          el.value = value;
+        }
+        // Trigger input events for live updates (e.g., range display)
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+  };
+  input.click();
+}
