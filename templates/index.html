@@ -99,59 +99,63 @@
               </div>
               <div class="collapsible-body collapsible-partitioning-strategy">
                 <div>
-                  <div id="discrete-options" class="discrete-options">
-                    <div class="discrete-option">
-                      <input
-                        type="radio"
-                        name="strategy"
-                        id="discrete-entropy"
-                        class="rect-input"
-                        value="shannon"
-                        checked
-                      />
-                      <label for="discrete-entropy" class="rect-label"
-                        >Shannon Entropy</label
-                      >
-                    </div>
-                    <div class="discrete-option">
-                      <input
-                        type="radio"
-                        name="strategy"
-                        id="discrete-clustering"
-                        class="rect-input"
-                        value="clustering"
-                      />
-                      <label
-                        for="discrete-clustering"
-                        class="rect-label"
-                        style="box-sizing: border-box"
-                        >Agglomerative Clustering</label
-                      >
+                  <div id="discrete-options">
+                    <div class="discrete-options">
+                      <div class="discrete-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="discrete-entropy"
+                          class="rect-input"
+                          value="shannon"
+                          checked
+                        />
+                        <label for="discrete-entropy" class="rect-label"
+                          >Shannon Entropy</label
+                        >
+                      </div>
+                      <div class="discrete-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="discrete-clustering"
+                          class="rect-input"
+                          value="clustering"
+                        />
+                        <label for="discrete-clustering" class="rect-label"
+                          >Agglomerative Clustering</label
+                        >
+                      </div>
                     </div>
                   </div>
 
                   <div id="continuous-options" style="display: none">
-                    <input
-                      type="radio"
-                      name="strategy"
-                      id="continuous-standard"
-                      class="rect-input"
-                      value="partitioning"
-                    />
-                    <label for="continuous-standard" class="rect-label"
-                      >Standard Partitioning</label
-                    >
-
-                    <input
-                      type="radio"
-                      name="strategy"
-                      id="continuous-clustering"
-                      class="rect-input"
-                      value="clustering"
-                    />
-                    <label for="continuous-clustering" class="rect-label"
-                      >Agglomerative Clustering</label
-                    >
+                    <div class="continuous-options">
+                      <div class="continuous-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="continuous-standard"
+                          class="rect-input"
+                          value="partitioning"
+                        />
+                        <label for="continuous-standard" class="rect-label"
+                          >Standard Partitioning</label
+                        >
+                      </div>
+                      <div class="continuous-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="continuous-clustering"
+                          class="rect-input"
+                          value="clustering"
+                        />
+                        <label for="continuous-clustering" class="rect-label"
+                          >Agglomerative Clustering</label
+                        >
+                      </div>
+                    </div>
                   </div>
                 </div>
 

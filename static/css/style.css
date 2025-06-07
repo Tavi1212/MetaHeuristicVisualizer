@@ -226,21 +226,25 @@ iframe#graph-frame {
   gap: 5px;
 }
 
-.discrete-options {
+.discrete-options,
+.continuous-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
 }
 
-.discrete-option:nth-child(1) > label {
+.discrete-option:nth-child(1) > label,
+.continuous-option:nth-child(1) > label {
   width: 100%;
   border-top-left-radius: 8px;
   border-bottom-left-radius: 8px;
 }
 
-.discrete-option:nth-child(2) > label {
+.discrete-option:nth-child(2) > label,
+.continuous-option:nth-child(2) > label {
   width: 100%;
   border-top-right-radius: 8px;
   border-bottom-right-radius: 8px;
+  box-sizing: border-box;
 }
 
 .configuration-title {
