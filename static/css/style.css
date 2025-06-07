@@ -129,6 +129,7 @@ textarea {
   font-family: inherit;
   width: 100%;
   box-sizing: border-box;
+  outline: none;
 }
 
 button {
