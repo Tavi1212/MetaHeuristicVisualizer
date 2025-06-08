@@ -1,81 +1,45 @@
-from typing import final
-
-from pyvis.network import Network
-import matplotlib.pyplot as plt
-from scripts.structures import ConfigData, AdvancedSettings
-from scripts.clustering import agglomerative_clustering_with_volume_constraints
 from scripts.create import create_stn
-from matplotlib import colormaps
-import webbrowser
-import itertools
-import random
+from scripts.partition import cont_standard_partitioning
+from scripts.structures import ConfigData
+from pyvis.network import Network
 
-
-def visualize_clusters(final_clusters, output_path="clusters.html", min_cluster_size=50):
-    net = Network(height="800px", width="100%", notebook=False)
-
-    # Normalize cluster sizes to [20, 80]
-    raw_sizes = [len(c) for c in final_clusters]
-    min_raw, max_raw = min(raw_sizes), max(raw_sizes)
-
-    def normalize_size(raw):
-        if max_raw == min_raw:
-            return 50
-        return 20 + (raw - min_raw) / (max_raw - min_raw) * 60  # maps to [20, 80]
-
-    # Add one node per cluster
-    cluster_nodes = []
-    for i, cluster in enumerate(final_clusters):
-        size = normalize_size(len(cluster))
-        color = "#{:06x}".format(random.randint(0, 0xFFFFFF))
-        label = f"Cluster {i + 1}\nSize: {len(cluster)}"
-        net.add_node(i, label=label, size=size, color=color)
-        cluster_nodes.append((i, set(cluster)))  # (cluster_id, node set)
-
-    # Optional: add edges between clusters if original graph is provided
-    if G:
-        for i, (id_a, nodes_a) in enumerate(cluster_nodes):
-            for j, (id_b, nodes_b) in enumerate(cluster_nodes):
-                if i >= j:
-                    continue
-                if any(G.has_edge(u, v) for u in nodes_a for v in nodes_b):
-                    net.add_edge(id_a, id_b)
-
-    net.show(output_path, notebook=False)
-
-input_path = "../input/stn_input2.txt"
-output_path = "graph_testing.html"
+input_path = "../input/stn_input1.txt"
 
 config = ConfigData(
     problemType="continuous",
     objectiveType="minimization",
-    partitionStrategy="clustering",
-    dPartitioning=0,
-    dCSize=0,
-    dVSize=0,
-    dDistance="",
-    cMinBound=0,
-    cMaxBound=0,
-    cDimension=0,
-    cHypercube=0,
-    cClusterSize=50,
-    cVolumeSize=25,
-    cDistance="euclidean"
-)
-
-advanced = AdvancedSettings(
-    best_solution="",
-    nr_of_runs=-1,
-    vertex_size=20,
-    arrow_size=1,
-    tree_layout=False
+    partitionStrategy="standard",
+    cMinBound=50,
+    cMaxBound=55,
+    cDimension=2,
+    cHypercube=-2
 )
 
 G = create_stn(input_path)
 
-final_clusters = agglomerative_clustering_with_volume_constraints(G, config)
-print(final_clusters)
-visualize_clusters(final_clusters)
+# Apply standard partitioning
+H, stats = cont_standard_partitioning(
+    G,
+    hypercube_factor=config.cHypercube,
+    min_bound=config.cMinBound,
+    max_bound=config.cMaxBound
+)
 
+# Print stats
+print("Partitioning Stats:")
+for k, v in stats.items():
+    print(f"{k}: {v}")
+if stats["original_edges"] > 0:
+    print(f"→ Edge retention: {100 * stats['kept_edges'] / stats['original_edges']:.2f}%")
 
+# Visualize
+def visualize_graph_pyvis(G, output_path="partitioned_graph.html"):
+    net = Network(height="800px", width="100%", directed=True)
+    for node, data in G.nodes(data=True):
+        label = f"{node}\ncount: {data.get('count', '')}"
+        net.add_node(node, label=label, size=20)
+    for u, v, data in G.edges(data=True):
+        net.add_edge(u, v, title=str(data.get("weight", 1)))
+    net.show(output_path, notebook=False)
 
+visualize_graph_pyvis(H)

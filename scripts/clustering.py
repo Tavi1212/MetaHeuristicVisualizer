@@ -1,12 +1,12 @@
-import networkx as nx
-import numpy as np
-from scipy.cluster.hierarchy import linkage, fcluster
-from scipy.spatial.distance import squareform
-from collections import defaultdict
 
+import numpy as np
+from collections import defaultdict
+from scipy.cluster.hierarchy import linkage, fcluster
 from scripts.structures import ConfigData
+
 from scripts.utils import (
     parse_continuous_solution,
+    parse_discrete_solutions,
     get_valid_distance_fn,
     compute_distance
 )
@@ -129,15 +129,7 @@ def agglomerative_clustering_with_volume_constraints(G, config : ConfigData) -> 
     print(f"\n✅ Final accepted clusters: {len(final_clusters)}")
     return final_clusters
 
-import networkx as nx
-import numpy as np
-from scipy.cluster.hierarchy import linkage, fcluster
-from collections import defaultdict
-from scripts.utils import (
-    parse_discrete_solutions,
-    get_valid_distance_fn,
-    compute_distance
-)
+
 
 def agglomerative_clustering_discrete(G, config : ConfigData) -> list[list[str]]:
     sample_node = next(iter(G.nodes), None)

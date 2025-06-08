@@ -51,23 +51,26 @@ max_val = max(all_values)
 # 3. Funcție de normalizare pentru vector
 def normalize_vector(vec):
     return [
-        100 * (x - min_val) / (max_val - min_val) if max_val != min_val else 100.0
+        min(100.0, max(0.0, 100 * (x - min_val) / (max_val - min_val))) if max_val != min_val else 100.0
         for x in vec
     ]
 
 # 4. Aplică normalizarea pe vectori
-# final_df["Solution1"] = final_df["Solution1"].apply(normalize_vector)
-# final_df["Solution2"] = final_df["Solution2"].apply(normalize_vector)
+final_df["Solution1"] = final_df["Solution1"].apply(normalize_vector)
+final_df["Solution2"] = final_df["Solution2"].apply(normalize_vector)
 
 # === (Opțional) Normalizare fitness ===
 # Dezactivează dacă nu vrei
-# min_fitness = min(final_df[["Fitness1", "Fitness2"]].values.flatten())
-# max_fitness = max(final_df[["Fitness1", "Fitness2"]].values.flatten())
-# final_df["Fitness1"] = 100 * (final_df["Fitness1"] - min_fitness) / (max_fitness - min_fitness)
-# final_df["Fitness2"] = 100 * (final_df["Fitness2"] - min_fitness) / (max_fitness - min_fitness)
+min_fitness = min(final_df[["Fitness1", "Fitness2"]].values.flatten())
+max_fitness = max(final_df[["Fitness1", "Fitness2"]].values.flatten())
+final_df["Fitness1"] = 100 * (final_df["Fitness1"] - min_fitness) / (max_fitness - min_fitness)
+final_df["Fitness2"] = 100 * (final_df["Fitness2"] - min_fitness) / (max_fitness - min_fitness)
+assert all(0.0 <= x <= 100.0 for vec in final_df["Solution1"] for x in vec), "Solution1 out of bounds"
+assert all(0.0 <= x <= 100.0 for vec in final_df["Solution2"] for x in vec), "Solution2 out of bounds"
+
 
 # Scrie în fișier
-with open("../input/stn_input2.txt", "w") as f:
+with open("../input/stn_input1.txt", "w") as f:
     f.write("Run\tFitness1\tSolution1\tFitness2\tSolution2\n")
     for _, row in final_df.iterrows():
         run = int(row["Run"])

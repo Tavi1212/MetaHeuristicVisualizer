@@ -1,13 +1,12 @@
 import os
+import networkx as nx
 from flask import Flask, request, jsonify, session, render_template, send_from_directory
 from scripts.config import get_config_from_session, get_upload_file_data, get_advanced_from_session
-from scripts.partition import apply_partitioning_from_config
+from scripts.partition import apply_partitioning_from_config, continuous_clustering, discrete_clustering, cont_standard_partitioning
 from scripts.visualize import tag_graph_origin, visualize_stn
 from scripts.create import create_stn
 from scripts.structures import AdvancedSettings
 from scripts.structures import ConfigData
-from scripts import settings
-from scripts import create
 
 
 app = Flask(__name__)
@@ -26,12 +25,43 @@ def generate_visualization():
 
     session["algorithms"] = files_data
 
+
+
     graphs = []
     for algo in files_data:
         G = create_stn(algo["path"])
-        G = apply_partitioning_from_config(G, config)
         tag_graph_origin(G, algo["color"])
         graphs.append(G)
+
+    merged_graph = nx.compose_all(graphs)
+
+    # 📊 Apply clustering if needed
+    if config.partitionStrategy == "clustering":
+        if config.problemType == "continuous":
+            clusters = continuous_clustering(merged_graph, config)
+        else:
+            clusters = discrete_clustering(merged_graph, config)
+
+        for cluster_id, nodes in enumerate(clusters):
+            for node in nodes:
+                if node in merged_graph:
+                    merged_graph.nodes[node]["cluster"] = cluster_id
+
+        graphs = [merged_graph]
+    elif config.partitionStrategy == "partitioning":
+        merged_graph = nx.compose_all(graphs)
+
+        H = cont_standard_partitioning(
+            merged_graph,
+            hypercube_factor=config.cHypercube,
+            min_bound=config.cMinBound,
+            max_bound=config.cMaxBound
+        )
+        graphs = [H]
+
+    else:
+        # standard partitioning applied per graph
+        graphs = [apply_partitioning_from_config(G, config) for G in graphs]
 
     legend_entries = {algo["color"]: algo["name"] for algo in files_data}
     visualize_stn(graphs, advanced, config, output_file="static/graph.html", minmax=config.objectiveType, legend_entries=legend_entries)
