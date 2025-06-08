@@ -21,16 +21,68 @@
 
     <div class="main" id="main">
       <div class="sidebar" id="sidebar">
-        <div class="sidebar-toggle-wrapper">
+        <div id="configuration-header" class="configuration-header">
           <button
             type="button"
-            class="sidebar-toggle"
-            onclick="toggleSidebar()"
+            class="icon-btn btn-outlined small-icon-btn"
+            title="Download"
+            onclick="downloadFormAsJSON()"
           >
-            <span class="chevron-right">›</span>
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M10 6v10M10 16l-4-4M10 16l4-4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <rect
+                x="3"
+                y="3"
+                width="14"
+                height="3"
+                rx="1.5"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
           </button>
+          <button
+            type="button"
+            class="icon-btn btn-outlined small-icon-btn"
+            title="Upload"
+            onclick="uploadFormFromJSON()"
+          >
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+              <path
+                d="M10 14V4M10 4L6 8M10 4l4 4"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <rect
+                x="3"
+                y="14"
+                width="14"
+                height="3"
+                rx="1.5"
+                stroke="currentColor"
+                stroke-width="2"
+              />
+            </svg>
+          </button>
+          <h1 class="configuration-title">Configuration</h1>
+          <div class="sidebar-toggle-wrapper">
+            <button
+              type="button"
+              class="sidebar-toggle"
+              onclick="toggleSidebar()"
+            >
+              <span class="chevron-right">›</span>
+            </button>
+          </div>
         </div>
-        <h1 class="configuration-title">Configuration</h1>
 
         <form id="problem-config-form" method="POST" action="/submit">
           <div class="config-sidebar">
@@ -99,59 +151,63 @@
               </div>
               <div class="collapsible-body collapsible-partitioning-strategy">
                 <div>
-                  <div id="discrete-options" class="discrete-options">
-                    <div class="discrete-option">
-                      <input
-                        type="radio"
-                        name="strategy"
-                        id="discrete-entropy"
-                        class="rect-input"
-                        value="shannon"
-                        checked
-                      />
-                      <label for="discrete-entropy" class="rect-label"
-                        >Shannon Entropy</label
-                      >
-                    </div>
-                    <div class="discrete-option">
-                      <input
-                        type="radio"
-                        name="strategy"
-                        id="discrete-clustering"
-                        class="rect-input"
-                        value="clustering"
-                      />
-                      <label
-                        for="discrete-clustering"
-                        class="rect-label"
-                        style="box-sizing: border-box"
-                        >Agglomerative Clustering</label
-                      >
+                  <div id="discrete-options">
+                    <div class="discrete-options">
+                      <div class="discrete-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="discrete-entropy"
+                          class="rect-input"
+                          value="shannon"
+                          checked
+                        />
+                        <label for="discrete-entropy" class="rect-label"
+                          >Shannon Entropy</label
+                        >
+                      </div>
+                      <div class="discrete-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="discrete-clustering"
+                          class="rect-input"
+                          value="clustering"
+                        />
+                        <label for="discrete-clustering" class="rect-label"
+                          >Agglomerative Clustering</label
+                        >
+                      </div>
                     </div>
                   </div>
 
                   <div id="continuous-options" style="display: none">
-                    <input
-                      type="radio"
-                      name="strategy"
-                      id="continuous-standard"
-                      class="rect-input"
-                      value="partitioning"
-                    />
-                    <label for="continuous-standard" class="rect-label"
-                      >Standard Partitioning</label
-                    >
-
-                    <input
-                      type="radio"
-                      name="strategy"
-                      id="continuous-clustering"
-                      class="rect-input"
-                      value="clustering"
-                    />
-                    <label for="continuous-clustering" class="rect-label"
-                      >Agglomerative Clustering</label
-                    >
+                    <div class="continuous-options">
+                      <div class="continuous-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="continuous-standard"
+                          class="rect-input"
+                          value="partitioning"
+                        />
+                        <label for="continuous-standard" class="rect-label"
+                          >Standard Partitioning</label
+                        >
+                      </div>
+                      <div class="continuous-option">
+                        <input
+                          type="radio"
+                          name="strategy"
+                          id="continuous-clustering"
+                          class="rect-input"
+                          value="clustering"
+                        />
+                        <label for="continuous-clustering" class="rect-label"
+                          >Agglomerative Clustering</label
+                        >
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -159,10 +215,15 @@
                   <div class="inner-discrete-entropy-options">
                     <label for="discrete_partitioning">Partitioning:</label>
                     <input
-                      type="number"
+                      type="range"
                       id="discrete_partitioning"
                       name="discrete_partitioning"
+                      min="1"
+                      max="100"
+                      value="10"
+                      oninput="document.getElementById('discrete_partitioning_value').textContent = `${this.value}%` "
                     />
+                    <span id="discrete_partitioning_value">10%</span>
                   </div>
                 </div>
 
@@ -199,59 +260,93 @@
                 </div>
 
                 <div id="continuous-standard-options" style="display: none">
-                  <label for="continuous_min_bound">Min Bound:</label>
-                  <input
-                    type="number"
-                    id="continuous_min_bound"
-                    name="continuous_min_bound"
-                  />
-
-                  <label for="continuous_max_bound">Max Bound:</label>
-                  <input
-                    type="number"
-                    id="continuous_max_bound"
-                    name="continuous_max_bound"
-                  />
-
-                  <label for="continuous_dimensions">N Dimensions:</label>
-                  <input
-                    type="number"
-                    id="continuous_dimensions"
-                    name="continuous_dimensions"
-                  />
-
-                  <label for="continuous_hypercube">Hypercube:</label>
-                  <input
-                    type="number"
-                    id="continuous_hypercube"
-                    name="continuous_hypercube"
-                  />
+                  <div class="inner-continuous-standard-options">
+                    <div>
+                      <label for="continuous_min_bound">Min Bound:</label>
+                      <input
+                        type="number"
+                        id="continuous_min_bound"
+                        name="continuous_min_bound"
+                      />
+                    </div>
+                    <div>
+                      <label for="continuous_max_bound">Max Bound:</label>
+                      <input
+                        type="number"
+                        id="continuous_max_bound"
+                        name="continuous_max_bound"
+                      />
+                    </div>
+                    <div>
+                      <label for="continuous_dimensions">No Dimensions:</label>
+                      <input
+                        type="range"
+                        id="continuous_dimensions"
+                        name="continuous_dimensions"
+                        min="1"
+                        max="20"
+                        value="3"
+                        oninput="document.getElementById('continuous_dimensions_value').textContent = this.value"
+                      />
+                      <span id="continuous_dimensions_value">3</span>
+                    </div>
+                    <div>
+                      <label for="continuous_hypercube">Hypercube:</label>
+                      <input
+                        type="range"
+                        id="continuous_hypercube"
+                        name="continuous_hypercube"
+                        min="-3"
+                        max="1"
+                        step="1"
+                        value="0"
+                        oninput="document.getElementById('continuous_hypercube_value').textContent = this.value"
+                      />
+                      <span id="continuous_hypercube_value">0</span>
+                    </div>
+                  </div>
                 </div>
 
                 <div id="continuous-clustering-options" style="display: none">
-                  <label for="continuous_cluster_size">Cluster Size:</label>
-                  <input
-                    type="number"
-                    id="continuous_cluster_size"
-                    name="continuous_cluster_size"
-                  />
-
-                  <label for="continuous_volume_size">Volume Size:</label>
-                  <input
-                    type="number"
-                    id="continuous_volume_size"
-                    name="continuous_volume_size"
-                  />
-
-                  <label for="continuous_distance_metric">Distance:</label>
-                  <select
-                    id="continuous_distance_metric"
-                    name="continuous_distance_metric"
-                  >
-                    <option value="hamming">Hamming</option>
-                    <option value="euclidean">Euclidean</option>
-                    <option value="manhattan">Manhattan</option>
-                  </select>
+                  <div class="inner-continuous-clustering-options">
+                    <div>
+                      <label for="continuous_cluster_size">Cluster Size:</label>
+                      <input
+                        type="range"
+                        id="continuous_cluster_size"
+                        name="continuous_cluster_size"
+                        min="0"
+                        max="100"
+                        value="50"
+                        oninput="document.getElementById('continuous_cluster_size_value').textContent = this.value"
+                      />
+                      <span id="continuous_cluster_size_value">50</span>
+                    </div>
+                    <div>
+                      <label for="continuous_volume_size">Volume Size:</label>
+                      <input
+                        type="range"
+                        id="continuous_volume_size"
+                        name="continuous_volume_size"
+                        min="0"
+                        max="100"
+                        value="50"
+                        oninput="document.getElementById('continuous_volume_size_value').textContent = this.value"
+                      />
+                      <span id="continuous_volume_size_value">50</span>
+                    </div>
+                    <div>
+                      <label for="continuous_distance_metric">Distance:</label>
+                      <select
+                        id="continuous_distance_metric"
+                        name="continuous_distance_metric"
+                      >
+                        <option value="hamming">Hamming</option>
+                        <option value="euclidean">Euclidean</option>
+                        <option value="manhattan">Manhattan</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -286,20 +381,29 @@
                   <div>
                     <label for="vertex_size">Vertex Size:</label>
                     <input
-                      type="number"
+                      type="range"
                       id="vertex_size"
                       name="vertex_size"
                       min="1"
+                      max="20"
+                      value="1"
+                      oninput="document.getElementById('vertex_size_value').textContent = this.value"
                     />
+                    <span id="vertex_size_value">1</span>
                   </div>
                   <div>
                     <label for="arrow_size">Arrow Size:</label>
                     <input
-                      type="number"
+                      type="range"
                       id="arrow_size"
                       name="arrow_size"
-                      min="1"
+                      min="0.15"
+                      max="5"
+                      step="0.01"
+                      value="1"
+                      oninput="document.getElementById('arrow_size_value').textContent = this.value"
                     />
+                    <span id="arrow_size_value">1</span>
                   </div>
                   <div style="flex-direction: row">
                     <label style="display: flex; align-items: center; gap: 8px">
