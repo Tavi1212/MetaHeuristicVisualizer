@@ -131,6 +131,7 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
 
     net = Network(height="600px", width="100%", directed=True)
 
+
     if advanced.tree_layout:
         apply_tree_layout(net, direction="UD")
     if advanced.best_solution != "":
@@ -158,10 +159,9 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     min_fit, max_fit = min(fitnesses, default=0), max(fitnesses, default=1)
 
     #Compute the node size range
-    base_size = advanced.vertex_size if advanced.vertex_size > 0 else 20
-    max_size = base_size + 40
-    arrow_scale = advanced.arrow_size if advanced.arrow_size > 0 else 1
-
+    raw_min_size = 25
+    raw_max_size = 60
+    vertex_scale = advanced.vertex_size
 
     has_merged_nodes = False
     for node, attrs in merged.nodes(data=True):
@@ -172,10 +172,10 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
 
         if node_type in fixed_colors:
             color = attrs.get("origin_color", fixed_colors[node_type])
-            size = base_size
+            size = raw_min_size * vertex_scale
         else:
             count = attrs.get("count", 1)
-            size = normalize(count, min_count, max_count, base_size, max_size)
+            size = normalize(count, min_count, max_count , raw_min_size * vertex_scale, raw_max_size * vertex_scale)
 
             lightness = normalize(fitness, max_fit, min_fit, 30, 90) if minmax == "minimization" else normalize(fitness, min_fit, max_fit, 30, 90)
 
@@ -189,7 +189,7 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
         net.add_node(node, label=" ", title=title, color=color, shape=shape, size=size)
 
     for u, v, attrs in merged.edges(data=True):
-        net.add_edge(u, v, color=attrs.get("color", "black"), value=attrs.get("weight", 1) * arrow_scale)
+        net.add_edge(u, v, color=attrs.get("color", "black"), value=attrs.get("weight", 1) * advanced.arrow_size)
 
     net.save_graph(output_file)
 

@@ -25,8 +25,6 @@ def generate_visualization():
 
     session["algorithms"] = files_data
 
-
-
     graphs = []
     for algo in files_data:
         G = create_stn(algo["path"])
@@ -88,8 +86,8 @@ def submit_config():
     advanced_settings = AdvancedSettings(
         best_solution=form.get("best_solution", ""),
         nr_of_runs=int(form.get("nr_of_runs") or -1),
-        vertex_size=int(form.get("vertex_size") or -1),
-        arrow_size=int(form.get("arrow_size") or -1),
+        vertex_size=float(form.get("vertex_size") or -1),
+        arrow_size=float(form.get("arrow_size") or -1),
         tree_layout="tree_layout" in form
     )
 
@@ -101,8 +99,8 @@ def submit_config():
         dCSize=int(form.get("disc_cluster_size") or 50),
         dVSize=int(form.get("disc_partitioning") or 25),
         dDistance=form.get("disc_distance_metric", "hamming"),
-        cMinBound=int(form.get("min_bound") or -100),
-        cMaxBound=int(form.get("max_bound") or 100),
+        cMinBound=float(form.get("min_bound") or -100),
+        cMaxBound=float(form.get("max_bound") or 100),
         cDimension=int(form.get("n_dimensions") or 3),
         cHypercube=int(form.get("hyper_cube") or 0),
         cClusterSize=int(form.get("cont_cluster_size") or 50),
