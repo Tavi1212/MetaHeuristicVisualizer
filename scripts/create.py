@@ -49,12 +49,14 @@ def create_stn(infile):
     for node in G.nodes:
         if node in start_ids:
             G.nodes[node]["type"] = "start"
+            G.nodes[node]["count"] = node_counts.get(node, 1)
         elif node in end_ids:
             G.nodes[node]["type"] = "end"
+            G.nodes[node]["count"] = node_counts.get(node, 1)
         else:
             G.nodes[node]["type"] = "intermediate"
+            G.nodes[node]["count"] = node_counts.get(node, 1) / 2
 
-        G.nodes[node]["count"] = node_counts.get(node, 1) / 2
         G.nodes[node]["fitness"] = fitness_avg.get(node, None)
 
     return G

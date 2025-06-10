@@ -1,9 +1,11 @@
 import json
 import networkx as nx
+import scripts.utils as utils
 from scripts.utils import add_best
 from scripts.structures import ConfigData, AdvancedSettings
 from scripts.utils import normalize, adjust_color_lightness, add_best
 from pyvis.network import Network
+import matplotlib.pyplot as plt
 
 
 # Takes a graph and colors it based on node types:
@@ -122,7 +124,7 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
 
     #Merge the graphs, keeping track of each node's origin algorithm, on basis of it's orgin color
     for G in graphs:
-        merged = nx.compose(merged, G)
+        merged = utils.merge_graphs_with_count(graphs)
         for node in G.nodes:
             origin = G.nodes[node].get("origin_color", "#1f77b4")
             if node not in node_origins:
@@ -166,16 +168,17 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     has_merged_nodes = False
     for node, attrs in merged.nodes(data=True):
         node_type = attrs.get("type", "intermediate")
-        shape = shape_map.get(node_type, "dot")
+        shape  = shape_map.get(node_type, "dot")
         fitness = attrs.get("fitness", 0)
-        title = f"ID: {node}\nFitness: {fitness:.4f}"
+        count = attrs.get("count", 1)
+        title = f"ID: {node}\nFitness: {fitness:.4f}\nCount: {count}"
 
         if node_type in fixed_colors:
             color = attrs.get("origin_color", fixed_colors[node_type])
-            size = raw_min_size * vertex_scale
+            size  = raw_min_size * vertex_scale
         else:
             count = attrs.get("count", 1)
-            size = normalize(count, min_count, max_count , raw_min_size * vertex_scale, raw_max_size * vertex_scale)
+            size  = normalize(count, min_count, max_count , raw_min_size * vertex_scale, raw_max_size * vertex_scale)
 
             lightness = normalize(fitness, max_fit, min_fit, 30, 90) if minmax == "minimization" else normalize(fitness, min_fit, max_fit, 30, 90)
 
@@ -195,4 +198,68 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
 
     if legend_entries:
         add_legend(output_file, legend_entries, include_gray=has_merged_nodes)
+
+
+def visualize_clusters(final_clusters, G, output_file="stn_graph.html"):
+    net = Network(height="800px", width="100%", notebook=False)
+
+    # Normalize cluster sizes to [20, 80]
+    raw_sizes = [len(c) for c in final_clusters]
+    min_raw, max_raw = min(raw_sizes), max(raw_sizes)
+
+    def normalize_size(raw):
+        if max_raw == min_raw:
+            return 50
+        return 20 + (raw - min_raw) / (max_raw - min_raw) * 60  # maps to [20, 80]
+
+    total_clusters = len(final_clusters)
+    total_nodes = len(G.nodes)
+
+    # Global fitness range
+    fitness_dict = nx.get_node_attributes(G, "fitness")
+    global_min_fitness = min(fitness_dict.values())
+    global_max_fitness = max(fitness_dict.values())
+    global_range = global_max_fitness - global_min_fitness or 1e-9
+
+    cluster_nodes = []
+    for i, cluster in enumerate(final_clusters):
+        size = normalize_size(len(cluster))
+
+        cmap = plt.colormaps['tab20']
+        color = cmap(i / total_clusters)
+        hex_color = '#%02x%02x%02x' % tuple(int(255 * x) for x in color[:3])
+
+        fitness_values = [G.nodes[n]["fitness"] for n in cluster if "fitness" in G.nodes[n]]
+        min_fitness = min(fitness_values)
+        max_fitness = max(fitness_values)
+        volume = (max_fitness - min_fitness) / global_range * 100
+        percentage = (len(cluster) / total_nodes) * 100
+
+        label = f"Cluster {i + 1}"
+        title = (
+            f"Cluster {i + 1}\n"
+            f"Size: {len(cluster)} ({percentage:.2f}%)\n"
+            f"Min Fitness: {min_fitness:.4g}\n"
+            f"Max Fitness: {max_fitness:.4g}\n"
+            f"Volume: {volume:.2f}%"
+        )
+
+        net.add_node(
+            i,
+            label=label,
+            size=size,
+            color=hex_color,
+            title=title
+        )
+        cluster_nodes.append((i, set(cluster)))
+
+    # Draw edges if any connection between cluster members
+    for i, (id_a, nodes_a) in enumerate(cluster_nodes):
+        for j, (id_b, nodes_b) in enumerate(cluster_nodes):
+            if i >= j:
+                continue
+            if any(G.has_edge(u, v) or G.has_edge(v, u) for u in nodes_a for v in nodes_b):
+                net.add_edge(id_a, id_b)
+
+    net.save_graph(output_file)
 

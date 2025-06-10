@@ -288,3 +288,17 @@ def is_distance_applicable(distance, encoding):
 def is_entropy_applicable(solution_type: str):
     solution_type = solution_type.lower()
     return solution_type in ("binary", "categorical")
+
+def merge_graphs_with_count(graphs):
+    merged = nx.DiGraph()
+    for G in graphs:
+        for node, data in G.nodes(data=True):
+            if node in merged:
+                merged.nodes[node]["count"] += data.get("count", 1)
+            else:
+                merged.add_node(node, **data)
+                if "count" not in merged.nodes[node]:
+                    merged.nodes[node]["count"] = data.get("count", 1)
+        for u, v, attr in G.edges(data=True):
+            merged.add_edge(u, v, **attr)
+    return merged

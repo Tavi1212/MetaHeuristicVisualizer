@@ -1,11 +1,23 @@
-import networkx as nx
-from scripts.structures import ConfigData
-from collections import defaultdict
-from scripts.partition import parse_vectors_string
-import numpy as np
-from scripts.create import create_stn
+from tensorboard import notebook
 
-config = ConfigData(cMinBound=45, cMaxBound=60, cHypercube=1)
+from scripts.create import create_stn
+from scripts.utils import parse_vectors_string
+from scripts.visualize import visualize_stn
+from scripts.structures import ConfigData, AdvancedSettings
+import matplotlib.pyplot as plt
+from collections import defaultdict
+from pyvis import network
+from pyvis.network import Network
+import networkx as nx
+import numpy as np
+import webbrowser
+import os
+
+
+
+config = ConfigData(cHypercube=0, cMinBound=50, cMaxBound=60)
+advanced = AdvancedSettings()
+G = create_stn("../input/stn_input1.txt")
 
 def standard_partitioning(G: nx.DiGraph, config: ConfigData) -> nx.DiGraph:
     pf = config.cHypercube
@@ -32,8 +44,9 @@ def standard_partitioning(G: nx.DiGraph, config: ConfigData) -> nx.DiGraph:
 
         if np.any(vec < lower_bound) or np.any(vec >= upper_bound):
             continue
+
         # Assign to hypercube
-        cube_id = tuple(int(np.floor((vec[i] - lower_bound) / hypercube_length)) for i in range(dim))
+        cube_id = tuple(int((vec[i] - lower_bound) // hypercube_length) for i in range(dim))
         solution_to_cube[node] = cube_id
         cube_members[cube_id].append(node)
 
@@ -82,6 +95,9 @@ def standard_partitioning(G: nx.DiGraph, config: ConfigData) -> nx.DiGraph:
 
     return H
 
-G = create_stn("../input/stn_input1.txt")
-
 H = standard_partitioning(G, config)
+visualize_stn([H], AdvancedSettings(tree_layout=False, vertex_size=15), config)
+
+webbrowser.open("file://" + os.path.realpath("graph.html"))
+
+

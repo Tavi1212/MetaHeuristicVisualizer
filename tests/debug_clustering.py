@@ -3,7 +3,7 @@ import os
 import webbrowser
 from networkx.classes import nodes
 from scripts.create import create_stn
-from scripts.partition import apply_partitioning_from_config, constrained_cluster, collapse_to_supernodes
+from scripts.partition import apply_partitioning_from_config, collapse_to_supernodes
 from scripts.visualize import tag_graph_origin, visualize_stn
 from scripts.structures import ConfigData
 
