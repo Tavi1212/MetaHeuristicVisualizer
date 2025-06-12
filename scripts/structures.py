@@ -45,7 +45,7 @@ class ConfigData():
             "dCSize":            self.dCSize,
             "dVSize":            self.dVSize,
             "dDistance":         self.dDistance,
-            "dMinBound":        self.cMinBound,
+            "cMinBound":        self.cMinBound,
             "cMaxBound":        self.cMaxBound,
             "cDimension":       self.cDimension,
             "cHypercube":       self.cHypercube,

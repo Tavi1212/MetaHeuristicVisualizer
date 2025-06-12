@@ -1,13 +1,8 @@
 import os
-import networkx as nx
-from flask import Flask, request, jsonify, session, render_template, send_from_directory
+from flask import Flask, request, jsonify, session, render_template, send_from_directory, redirect, url_for, send_file
 from scripts import config as cnf
-from scripts.partition import continuous_clustering, discrete_clustering
-from scripts.visualize import tag_graph_origin, visualize_stn
-from scripts.create import create_stn
 from scripts.structures import AdvancedSettings
 from scripts.structures import ConfigData
-
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -77,7 +72,16 @@ def submit_config():
 
 @app.route("/display_graph")
 def display_graph():
-    return send_from_directory("static","graph.html")
+    return send_from_directory("static","graph_fr.html")
+
+@app.route("/display_graph/<layout>")
+def display_graph_layout(layout):
+    if layout == "fr":
+        return send_file("static/graph_fr.html")
+    elif layout == "kk":
+        return send_file("static/graph_kk.html")
+    else:
+        return "Unknown layout", 400
 
 @app.route("/", methods=['GET', 'POST'])
 def index():

@@ -352,6 +352,7 @@ def standard_partitioning(G: nx.DiGraph, config: ConfigData) -> nx.DiGraph:
     solution_to_cube = {}
     cube_types = defaultdict(lambda: {"start": 0, "end": 0, "intermediate": 0})
     cube_members = defaultdict(list)
+    cube_fitnesses = defaultdict(list)
 
 
     for node in G.nodes:
@@ -372,6 +373,9 @@ def standard_partitioning(G: nx.DiGraph, config: ConfigData) -> nx.DiGraph:
         cube_members[cube_id].append(node)
 
         print(f"Node: {parsed}  Cube: {cube_id}")
+
+        if "fitness" in G.nodes[node]:
+            cube_fitnesses[cube_id].append(G.nodes[node]["fitness"])
 
         # Record types
         node_type = G.nodes[node].get("type", "intermediate")
@@ -397,6 +401,14 @@ def standard_partitioning(G: nx.DiGraph, config: ConfigData) -> nx.DiGraph:
 
         # Determine the count of nodes in each hypercube
         H.nodes[str_cube_id]["count"] = len(cube_members[cube_id])
+
+        fitnesses = cube_fitnesses.get(cube_id, [])
+        if fitnesses:
+            if config.objectiveType == "minimization":
+                best_fitness = min(fitnesses)
+            else:
+                best_fitness = max(fitnesses)
+            H.nodes[str_cube_id]["fitness"] = best_fitness
 
     #Add edges between hypercubes
     for u, v in G.edges:

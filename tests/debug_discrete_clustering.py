@@ -3,7 +3,7 @@ import networkx as nx
 from pyvis.network import Network
 import matplotlib.pyplot as plt
 from scripts.structures import ConfigData, AdvancedSettings
-from scripts.clustering import agglomerative_clustering_discrete
+from scripts.partition import discrete_clustering
 from scripts.create import create_stn
 from matplotlib import colormaps
 import webbrowser
@@ -109,7 +109,7 @@ advanced = AdvancedSettings(
 
 G = create_stn(input_path)
 
-final_clusters = agglomerative_clustering_discrete(G, config)
+final_clusters = discrete_clustering(G, config)
 print(final_clusters)
 visualize_clusters(final_clusters, G)
 

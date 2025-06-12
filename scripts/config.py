@@ -70,33 +70,63 @@ def build_graphs(files_data):
 def apply_partition_and_visualize(graphs, config, advanced, files_data):
     legend_entries = {algo["color"]: algo["name"] for algo in files_data}
 
-    partitioned_graphs = []
-    for G in graphs:
-        if config.partitionStrategy == "partitioning":
-            partitioned = partition.standard_partitioning(G, config)
-            partitioned_graphs.append(partitioned)
+    # Tag each graph's nodes with its origin color
+    for i, G in enumerate(graphs):
+        color = files_data[i]["color"]
+        for node in G.nodes:
+            G.nodes[node]["origin_color"] = color
 
-        elif config.partitionStrategy == "shannon":
-            partitioned = partition.shannon_entropy_partitioning(G, config)
-            partitioned_graphs.append(partitioned)
+    if config.partitionStrategy == "clustering":
+        for i, G in enumerate(graphs):
+            for node in G.nodes:
+                G.nodes[node]["origin_color"] = files_data[i]["color"]
 
-        elif config.partitionStrategy == "clustering":
-            if config.problemType == "continuous":
-                clustered = partition.continuous_clustering(G, config)
-            else:
-                clustered = partition.discrete_clustering(G, config)
-            partitioned_graphs.append(clustered)
+        merged = nx.compose_all(graphs)
 
+        if config.problemType == "continuous":
+            final_clusters = partition.continuous_clustering(merged, config)
         else:
-            # Fallback if no recognized partition strategy
-            partitioned_graphs.append(G)
+            final_clusters = partition.discrete_clustering(merged, config)
 
-    # Final visualization of all processed graphs
-    visualize.visualize_stn(
-        partitioned_graphs,
-        advanced,
-        config,
-        output_file="static/graph.html",
-        minmax=config.objectiveType,
-        legend_entries=legend_entries
-    )
+        visualize.visualize_clusters(final_clusters, merged, output_file="static/graph.html", legend_entries=legend_entries)
+        return
+
+    else:
+        partitioned_graphs = []
+
+        for i, G in enumerate(graphs):
+            if config.partitionStrategy == "partitioning":
+                partitioned = partition.standard_partitioning(G, config)
+                visualize.tag_graph_origin(partitioned, files_data[i]["color"])
+                partitioned_graphs.append(partitioned)
+
+            elif config.partitionStrategy == "shannon":
+                partitioned = partition.shannon_entropy_partitioning(G, config)
+                visualize.tag_graph_origin(partitioned, files_data[i]["color"])
+                partitioned_graphs.append(partitioned)
+
+            else:
+                # Fallback if no recognized strategy
+                visualize.tag_graph_origin(G, files_data[i]["color"])
+                partitioned_graphs.append(G)
+
+        visualize.visualize_stn(
+            partitioned_graphs,
+            advanced,
+            config,
+            output_file="static/graph_fr.html",
+            minmax=config.objectiveType,
+            legend_entries=legend_entries,
+            layout="fr"
+        )
+
+        visualize.visualize_stn(
+            partitioned_graphs,
+            advanced,
+            config,
+            output_file="static/graph_kk.html",
+            minmax=config.objectiveType,
+            legend_entries=legend_entries,
+            layout="kk"
+        )
+

@@ -14,7 +14,7 @@ body {
   align-items: center;
   background-color: #222;
   width: 100%;
-  height: 80px;
+  height: 60px;
   color: #fff;
 }
 
@@ -26,7 +26,8 @@ body {
 }
 
 .main {
-  height: calc(100vh - 80px);
+  background-color: #2a2a2a;
+  height: calc(100vh - 60px);
   display: flex;
 }
 
@@ -45,7 +46,9 @@ body {
 
 .content {
   width: 100%;
-  padding: 20px;
+  padding: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -64,7 +67,6 @@ body {
   display: flex;
   align-items: center;
   justify-content: start;
-  font-weight: bold;
 }
 
 .rect-container {
@@ -205,7 +207,7 @@ button:hover {
 
 iframe#graph-frame {
   width: 100%;
-  height: 800px;
+  height: 100%;
   border: none;
 }
 
@@ -348,25 +350,11 @@ input[type="checkbox"].styled-checkbox:focus {
 /* Smooth neon tech gradient animation for the main title */
 .titlu-bengos {
   font-family: "Montserrat", "Ancizar Serif", sans-serif;
-  font-weight: 800;
-  font-size: 2.7rem;
-  letter-spacing: 1.5px;
-  background: linear-gradient(
-    90deg,
-    #00f0ff 0%,
-    #3a7afe 15%,
-    #a259ff 35%,
-    #ff5cf4 55%,
-    #a67c52 70%,
-    /* brown accent */ #ffbe00 85%,
-    #00f0ff 100%
-  );
-  background-size: 400% auto;
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-  animation: neon-bengos 7s linear infinite alternate;
+  font-weight: 700;
+  font-size: 2.5rem;
+  letter-spacing: 0.8px;
+  color: #f1f1f1;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   text-align: center;
   margin: 0.5em 0;
 }
@@ -398,8 +386,12 @@ input[type="checkbox"].styled-checkbox:focus {
   transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.collapsible-section.collapsed .chevron {
-  transform: rotate(0deg);
+.collapsible-section {
+  background-color: #333; /* slightly lighter than sidebar */
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); /* subtle depth */
 }
 
 .collapsible-section:not(.collapsed) .chevron {
@@ -432,7 +424,6 @@ input[type="checkbox"].styled-checkbox:focus {
   padding: 12px 16px;
   background-color: #444;
   color: #e0e0e0;
-  font-weight: bold;
   border-bottom: 1px solid #333;
   user-select: none;
 }
@@ -611,6 +602,7 @@ input[type="range"]::-moz-range-track {
   align-items: center;
   gap: 10px;
   margin-top: 20px;
+  margin-bottom: 20px;
 }
 
 .configuration-title {
@@ -652,4 +644,28 @@ input[type="range"]::-moz-range-track {
   min-width: 22px;
   min-height: 22px;
   display: block;
+}
+
+::-webkit-scrollbar {
+  width: 6px;             /* thinner scrollbar */
+}
+
+::-webkit-scrollbar-track {
+  background: transparent; /* optional: or use a very light color */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15); /* translucent thumb */
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.25); /* on hover */
+}
+
+/* Optional for Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
 }

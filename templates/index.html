@@ -12,6 +12,8 @@
             href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap"
             rel="stylesheet"
     />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <title>Metaheuristic Visualizer</title>
 </head>
 <body>
@@ -87,8 +89,7 @@
         <form id="problem-config-form" method="POST" action="/submit">
             <div class="config-sidebar">
                 <div class="collapsible-section">
-                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                        <span class="chevron">&#8250;</span>
+                    <div class="collapsible-header">
                         <span>Problem Type</span>
                     </div>
                     <div class="collapsible-body">
@@ -143,10 +144,8 @@
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="collapsible-section">
-                    <div class="collapsible-header" onclick="toggleCollapsible(this)">
-                        <span class="chevron">&#8250;</span>
+
+                    <div class="collapsible-header" , style="margin-top: 10px">
                         <span>Partitioning Strategy</span>
                     </div>
                     <div class="collapsible-body collapsible-partitioning-strategy">
@@ -361,9 +360,9 @@
                         </div>
                     </div>
                 </div>
-                <div class="collapsible-section">
+                <div class="collapsible-section collapsed">
                     <div
-                            class="collapsible-header collapsible-menu"
+                            class="collapsible-header"
                             onclick="toggleCollapsible(this)"
                     >
                         <span class="chevron">&#8250;</span>
@@ -494,11 +493,39 @@
     <div class="content">
         <iframe
                 id="graph-frame"
-                style="visibility: hidden; height: 100%"
+                style="height: calc(100vh - 110px); width: 100%; border: none; margin: 0; padding: 0;"
                 src="{{ url_for('display_graph') }}"
-                width="100%"
                 frameborder="0"
         ></iframe>
+
+        <!-- Layout and download buttons -->
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0;">
+            <div style="width: 120px;"></div>
+
+            <div style="display: flex; gap: 0;">
+                <div class="discrete-option" style="margin: 0;">
+                    <input type="radio" name="layout" id="fr-layout" class="rect-input" value="fr" checked
+                           onclick="switchLayout('fr')"/>
+                    <label for="fr-layout" class="rect-label" style="min-width: 200px; height: 33px;">FR</label>
+                </div>
+                <div class="discrete-option" style="margin: 0;">
+                    <input type="radio" name="layout" id="kk-layout" class="rect-input" value="kk"
+                           onclick="switchLayout('kk')"/>
+                    <label for="kk-layout" class="rect-label" style="min-width: 200px; height: 33px;">KK</label>
+                </div>
+            </div>
+
+            <div>
+                <button
+                        type="button"
+                        class="btn-outlined"
+                        onclick="downloadPDF()"
+                        style="padding: 6px 14px; margin: 0; height: 33px;"
+                >
+                    Download PDF
+                </button>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
