@@ -88,7 +88,7 @@ def apply_partition_and_visualize(graphs, config, advanced, files_data):
         else:
             final_clusters = partition.discrete_clustering(merged, config)
 
-        visualize.visualize_clusters(final_clusters, merged, output_file="static/graph.html", legend_entries=legend_entries)
+        visualize.visualize_clusters(final_clusters, merged, output_file="static/graph_fr.html", legend_entries=legend_entries)
         return
 
     else:

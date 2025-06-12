@@ -7,6 +7,7 @@ from scripts.structures import ConfigData, AdvancedSettings
 from scripts.utils import normalize, adjust_color_lightness, add_best
 from pyvis.network import Network
 import matplotlib.pyplot as plt
+from scripts.utils import adjust_color_lightness, normalize
 
 
 # Takes a graph and colors it based on node types:
@@ -107,6 +108,40 @@ def add_legend(html_file, color_name_map, include_gray):
         f.write(html)
 
 
+def add_info(html_file, layout, num_nodes, num_edges, num_components):
+    stats_html = f"""
+    <div style="position: absolute; bottom: 20px; right: 20px; 
+                font-family: sans-serif; font-size: 13px; color: #444;
+                background: rgba(255,255,255,0.85); padding: 6px 10px;">
+        <div><b>Layout:</b> {layout.upper()}</div>
+        <div><b>Nodes:</b> {num_nodes}</div>
+        <div><b>Edges:</b> {num_edges}</div>
+        <div><b>Components:</b> {num_components}</div>
+    </div>
+    """
+
+    with open(html_file, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    html = html.replace("</body>", stats_html + "\n</body>")
+
+    with open(html_file, "w", encoding="utf-8") as f:
+        f.write(html)
+
+
+def add_layout_flag(html_file, layout_name):
+    with open(html_file, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    # Embed a layout flag as a JS-accessible element
+    layout_div = f'<div id="layout-flag" data-layout="{layout_name}" style="display:none;"></div>'
+
+    html = html.replace("</body>", layout_div + "\n</body>")
+
+    with open(html_file, "w", encoding="utf-8") as f:
+        f.write(html)
+
+
 def apply_tree_layout(net: Network, direction: str = "UD"):
     layout_options = {
         "layout": {
@@ -173,6 +208,7 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     raw_min_size = 25
     raw_max_size = 60
     vertex_scale = advanced.vertex_size
+    max_node_size = 70
 
     has_merged_nodes = False
     for node, attrs in merged.nodes(data=True):
@@ -182,7 +218,8 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
         count = attrs.get("count", 1)
         title = f"ID: {node}\nFitness: {fitness:.4f}\nCount: {count}"
 
-        size = normalize(count, min_count, max_count, raw_min_size * vertex_scale, raw_max_size * vertex_scale)
+        scaled_size = normalize(count, min_count, max_count, raw_min_size * vertex_scale, raw_max_size * vertex_scale)
+        size = min(scaled_size, max_node_size)
 
         if node_type in fixed_colors:
             color = attrs.get("origin_color", fixed_colors[node_type])
@@ -209,8 +246,11 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     if legend_entries:
         add_legend(output_file, legend_entries, include_gray=has_merged_nodes)
 
+    num_components = nx.number_weakly_connected_components(merged)
+    add_info(output_file, layout, len(merged.nodes), len(merged.edges), num_components)
 
-def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_entries=None):
+
+def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_entries=None, objective_type="minimization"):
     net = Network(height="100%", width="100%", notebook=False)
 
     shape_map = {
@@ -261,7 +301,19 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
         if dominant_type in fixed_colors:
             dominant_color = fixed_colors[dominant_type]
         else:
-            dominant_color = Counter(color_counts).most_common(1)[0][0]
+            base_color = Counter(color_counts).most_common(1)[0][0]
+
+            if dominant_type == "intermediate":
+                if global_range == 0:
+                    lightness = 60  # default mid-lightness if no variation
+                else:
+                    if objective_type == "minimization":
+                        lightness = normalize(max_fitness, global_min_fitness, global_max_fitness, 90, 30)
+                    else:
+                        lightness = normalize(max_fitness, global_min_fitness, global_max_fitness, 30, 90)
+                dominant_color = adjust_color_lightness(base_color, lightness)
+            else:
+                dominant_color = base_color
 
         fitness_values = [G.nodes[n]["fitness"] for n in cluster if "fitness" in G.nodes[n]]
         min_fitness = min(fitness_values)
@@ -294,14 +346,17 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
             if i >= j:
                 continue
             if any(G.has_edge(u, v) or G.has_edge(v, u) for u in nodes_a for v in nodes_b):
-                net.add_edge(id_a, id_b)
+                net.add_edge(id_a, id_b, color="black")
 
     net.save_graph(output_file)
 
     if legend_entries:
-        # Determine whether we need to include the "Merged Node" legend entry
         has_merged_nodes = any(
             G.nodes[n].get("origin_color", "") == "#787878"
             for cluster in final_clusters for n in cluster
         )
         add_legend(output_file, legend_entries, include_gray=has_merged_nodes)
+
+    num_components = nx.number_weakly_connected_components(G)
+
+

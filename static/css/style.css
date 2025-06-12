@@ -1,5 +1,14 @@
 @import url("https://fonts.googleapis.com/css2?family=Ancizar+Serif:ital,wght@0,300..900;1,300..900&display=swap");
 
+.zoomed-layout {
+  transform: scale(0.7);
+  transform-origin: top left;
+
+  width: 142.8571%;  /* 100 / 0.7 */
+  height: 142.8571vh; /* 100 / 0.7 to fill the viewport */
+  overflow: hidden;
+}
+
 body {
   background-color: #181818;
   margin: 0;

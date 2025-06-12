@@ -250,6 +250,10 @@ function submitAllData() {
         .then(() => {
             const iframe = document.getElementById("graph-frame");
             iframe.src = "/display_graph/fr"; // default layout after generation
+            document.getElementById("algorithm_list_container").innerHTML = "";
+            addAlgorithm();
+            discreteBtn.checked = true;
+            discreteBtn.dispatchEvent(new Event("change"));
         })
         .catch((error) => {
             console.error("Error in submission chain:", error);
@@ -257,6 +261,9 @@ function submitAllData() {
                 "There was a problem submitting your data. See console for details."
             );
         });
+
+    discreteBtn.checked = true;
+    discreteBtn.dispatchEvent(new Event("change"));
 }
 
 function submitAlgorithmData() {
@@ -294,14 +301,23 @@ function submitAlgorithmData() {
             method: "POST",
             body: formData,
         })
-            .then((response) => {
-                if (response.ok) {
-                    resolve();
-                } else {
-                    reject("Algorithm submission failed");
-                }
+            .then(() => {
+                const iframe = document.getElementById("graph-frame");
+                iframe.src = "/display_graph/fr";
+
+                // ✅ Reset the config form
+                document.getElementById("problem-config-form").reset();
+
+                // ✅ Clear algorithm list and add a fresh one
+                const algoContainer = document.getElementById("algorithm_list_container");
+                algoContainer.innerHTML = "";
+                addAlgorithm();
+
+                // ✅ Reset strategy radio and UI
+                discreteBtn.checked = true;
+                discreteBtn.dispatchEvent(new Event("change"));
             })
-            .catch(reject);
+
     });
 }
 
@@ -444,21 +460,37 @@ function switchLayout(layout) {
 }
 
 async function downloadPDF() {
-  const iframe = document.getElementById("graph-frame");
-  const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-  const content = iframeDoc.body;
+    const iframe = document.getElementById("graph-frame");
+    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const content = iframeDoc.body;
 
-  // Wait a little to ensure everything is rendered
-  await new Promise(resolve => setTimeout(resolve, 500));
+    // Wait a little to ensure everything is rendered
+    await new Promise(resolve => setTimeout(resolve, 500));
 
-  html2canvas(content, { useCORS: true }).then(canvas => {
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jspdf.jsPDF({
-      orientation: 'landscape',
-      unit: 'px',
-      format: [canvas.width, canvas.height]
+    html2canvas(content, {useCORS: true}).then(canvas => {
+        const imgData = canvas.toDataURL("image/png");
+        const pdf = new jspdf.jsPDF({
+            orientation: 'landscape',
+            unit: 'px',
+            format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save("stn_graph.pdf");
     });
-    pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
-    pdf.save("stn_graph.pdf");
-  });
 }
+
+window.addEventListener("load", () => {
+    const layoutDiv = document.getElementById("layout-flag");
+    const layoutType = layoutDiv?.dataset?.layout;
+
+    const frButton = document.getElementById("layout-fr");
+    const kkButton = document.getElementById("layout-kk");
+
+    if (layoutType === "clusters" || layoutType === "tree") {
+        if (frButton) frButton.disabled = true;
+        if (kkButton) kkButton.disabled = true;
+    } else {
+        if (frButton) frButton.disabled = false;
+        if (kkButton) kkButton.disabled = false;
+    }
+});
