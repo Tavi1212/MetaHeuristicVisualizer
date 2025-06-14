@@ -6,12 +6,15 @@ import networkx as nx
 #Type:    the node can either indicate the start, end, or intermediary solution of a run
 #Fitness: the fitness associated to the solution
 #Count:   counts how many times the solution was found in all runs
-def create_stn(infile):
+def create_stn(infile, nr_of_runs, best_solution, objective_type):
     df = pd.read_table(infile, sep=r"\s+")
     df["Run"] = pd.to_numeric(df["Run"], errors="coerce")
 
     if "Run" not in df.columns:
         df["Run"] = 0
+
+    if nr_of_runs != -1 and nr_of_runs > 0:
+        df = df[df["Run"] <= nr_of_runs]
 
     #Identify where runs start and end
     run_changes = df["Run"].diff() != 0
@@ -58,5 +61,26 @@ def create_stn(infile):
             G.nodes[node]["count"] = node_counts.get(node, 1) / 2
 
         G.nodes[node]["fitness"] = fitness_avg.get(node, None)
+
+    if best_solution:
+        if best_solution in G.nodes:
+            G.nodes[best_solution]["type"] = "best"
+        else:
+            G.add_node(best_solution)
+            G.nodes[best_solution]["type"] = "best"
+            G.nodes[best_solution]["count"] = 1
+            G.nodes[best_solution]["fitness"] = None
+
+    if objective_type == "minimization":
+        best_node = min(
+            ((n, d["fitness"]) for n, d in G.nodes(data=True) if d.get("fitness") is not None),
+            key=lambda x: x[1]
+        )[0]
+    else:
+        best_node = max(
+            ((n, d["fitness"]) for n, d in G.nodes(data=True) if d.get("fitness") is not None),
+            key=lambda x: x[1]
+        )[0]
+    G.nodes[best_node]["type"] = "best"
 
     return G

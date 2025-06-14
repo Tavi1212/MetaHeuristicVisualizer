@@ -1,14 +1,5 @@
 @import url("https://fonts.googleapis.com/css2?family=Ancizar+Serif:ital,wght@0,300..900;1,300..900&display=swap");
 
-.zoomed-layout {
-  transform: scale(0.7);
-  transform-origin: top left;
-
-  width: 142.8571%; /* 100 / 0.7 */
-  height: 142.8571vh; /* 100 / 0.7 to fill the viewport */
-  overflow: hidden;
-}
-
 body {
   background-color: #181818;
   margin: 0;
@@ -45,9 +36,9 @@ body {
   height: 100%;
   overflow-y: auto;
   position: relative;
-  width: 400px;
-  min-width: 400px;
-  max-width: 400px;
+  width: 350px;
+  min-width: 350px;
+  max-width: 350px;
   transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     min-width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
     max-width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
@@ -677,61 +668,4 @@ input[type="range"]::-moz-range-track {
 * {
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
-}
-
-/* Compact sidebar: 70% font size, reduced padding and margins */
-.sidebar,
-.config-sidebar,
-.collapsible-section,
-.collapsible-header,
-.collapsible-body,
-.configuration-title,
-label,
-input,
-select,
-button {
-  font-size: 70% !important;
-  padding: 4px 4px !important;
-  margin: 2px 0 !important;
-  box-sizing: border-box;
-}
-
-.sidebar {
-  width: 180px !important;
-  min-width: 140px !important;
-  padding: 6px 4px !important;
-}
-
-.collapsible-header,
-.configuration-title {
-  font-weight: 500;
-  padding: 4px 0 !important;
-  margin-bottom: 2px !important;
-}
-
-input[type="text"],
-input[type="number"],
-select {
-  height: 22px !important;
-  padding: 2px 4px !important;
-}
-
-button,
-.btn-outlined,
-input[type="button"] {
-  height: 24px !important;
-  padding: 2px 8px !important;
-}
-
-.sidebar-toggle-wrapper {
-  margin: 0 !important;
-  padding: 0 !important;
-}
-
-.collapsible-body {
-  padding: 2px 0 !important;
-}
-
-label {
-  margin-bottom: 2px !important;
 }

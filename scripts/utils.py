@@ -26,13 +26,6 @@ def adjust_color_lightness(hex_color, lightness_percent):
     return "#{:02x}{:02x}{:02x}".format(int(r * 255), int(g * 255), int(b * 255))
 
 
-def add_best(G: nx.DiGraph, best: str):
-    if best in G:
-        G.nodes[best]["type"] = "best"
-    else:
-        G.add_node(best, type="best")
-
-
 def shannon_entropy_vector(vec):
     if not isinstance(vec, (list, tuple)):
         vec = list(vec)
@@ -302,3 +295,31 @@ def merge_graphs_with_count(graphs):
         for u, v, attr in G.edges(data=True):
             merged.add_edge(u, v, **attr)
     return merged
+
+
+def assign_cluster_levels(G, clusters):
+    cluster_graph = nx.DiGraph()
+    cluster_nodes = [(i, set(cluster)) for i, cluster in enumerate(clusters)]
+
+    for i, (id_a, nodes_a) in enumerate(cluster_nodes):
+        for j, (id_b, nodes_b) in enumerate(cluster_nodes):
+            if i != j and any(G.has_edge(u, v) for u in nodes_a for v in nodes_b):
+                cluster_graph.add_edge(i, j)
+
+    # Initialize all levels to 0
+    levels = {node: 0 for node in cluster_graph.nodes}
+
+    # BFS-style manual traversal to assign levels
+    visited = set()
+    queue = [n for n in cluster_graph.nodes if cluster_graph.in_degree(n) == 0]
+
+    while queue:
+        node = queue.pop(0)
+        visited.add(node)
+        for succ in cluster_graph.successors(node):
+            levels[succ] = max(levels[succ], levels[node] + 1)
+            if succ not in visited:
+                queue.append(succ)
+
+    # Any unreachable nodes (e.g., in cycles) will stay at level 0
+    return levels

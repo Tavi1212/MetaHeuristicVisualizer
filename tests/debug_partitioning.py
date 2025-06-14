@@ -4,20 +4,20 @@ from scripts.visualize import tag_graph_origin, visualize_stn
 from scripts.structures import ConfigData, AdvancedSettings
 from scripts.partition import standard_partitioning
 
-# === Advanced visualization settings ===
+# Advanced visualization settings
 advanced = AdvancedSettings(
-    best_solution="",        # Leave empty if you're not highlighting a best solution
+    best_solution="",
     nr_of_runs=None,
-    vertex_size=1.0,         # Scale node sizes properly (1.0 means normal scale)
-    arrow_size=1.0,          # Scale arrow thickness
+    vertex_size=1.0,
+    arrow_size=1.0,
     tree_layout=False
 )
 
-# === Configuration for standard partitioning on continuous data ===
+# Configuration for standard partitioning on continuous data
 config = ConfigData(
     problemType="continuous",
-    objectiveType="maximization",       # or "minimization"
-    partitionStrategy="partitioning",   # this must match the backend expectation, not "standard"
+    objectiveType="maximizatimization",
+    partitionStrategy="partitioning",
 
     dPartitioning=0,
     dCSize=50,
@@ -27,35 +27,35 @@ config = ConfigData(
     cMinBound=45,
     cMaxBound=55,
     cDimension=3,
-    cHypercube=0,                       # log10(length); i.e., 10^0 = cube length 1.0
+    cHypercube=0,
 
     cClusterSize=0,
     cVolumeSize=0,
     cDistance=""
 )
 
-# === Algorithm file input and color assignment ===
+# Algorithm file input and color assignment
 files_data = [
     {
         "path": "../input/stn_input1.txt",
         "name": "DE Algorithm",
-        "color": "#32a852"  # Set your desired hex color here
+        "color": "#32a852"
     },
 ]
 
 graphs = []
 
-# === Load and partition each input STN ===
+# Load and partition each input STN
 for algo in files_data:
-    G = create_stn(algo["path"])                     # Load raw STN
-    G = standard_partitioning(G, config)             # Apply standard (continuous) partitioning
-    tag_graph_origin(G, algo["color"])               # Assign node colors for this algorithm
+    G = create_stn(algo["path"])
+    G = standard_partitioning(G, config)
+    tag_graph_origin(G, algo["color"])
     graphs.append(G)
 
-# === Legend for the visualized algorithms ===
+# Legend for the visualized algorithm
 legend_entries = {algo["color"]: algo["name"] for algo in files_data}
 
-# === Render the final STN HTML visualization ===
+# Render the final STN HTML visualization
 visualize_stn(
     graphs,
     advanced,
@@ -65,5 +65,5 @@ visualize_stn(
     legend_entries=legend_entries
 )
 
-# === Open the result in the default web browser ===
+# Open the result in the default web browser
 webbrowser.open_new_tab("graph_debug.html")

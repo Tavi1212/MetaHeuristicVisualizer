@@ -4,33 +4,43 @@ from scripts import config as cnf
 from scripts.structures import AdvancedSettings
 from scripts.structures import ConfigData
 
+# Initialize Flask app and secret key for session management
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
 
+# Route: Generate visualization after submitting config
 @app.route("/generate_visualization", methods=['POST'])
 def generate_visualization():
     try:
+        # Load config, advanced settings, and algorithm file data
         config, advanced, files_data = cnf.load_config_and_files()
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
+    # Save uploaded algorithm metadata in session
     session["algorithms"] = files_data
-    graphs = cnf.build_graphs(files_data)
 
+    # Build STN graphs from solution data
+    graphs = cnf.build_graphs(files_data, advanced.nr_of_runs, advanced.best_solution, config.objectiveType)
+
+    # Apply clustering/partitioning and generate visualization output
     cnf.apply_partition_and_visualize(graphs, config, advanced, files_data)
 
     return jsonify({"success": True})
 
 
+# Route: Receive submitted form config from frontend
 @app.route("/submit", methods=['POST'])
 def submit_config():
     form = request.form
     print("Received form data:", dict(form))
 
+    # Extract high-level problem settings
     objective_type = form.get("objective_type", "minimization")
     problem_type = "discrete" if form.get("problem_type") == "discrete" else "continuous"
 
+    # Determine which strategy the user selected
     strat_key = form.get("strategy")
     if strat_key == "shannon":
         partition_strategy = "shannon"
@@ -39,6 +49,7 @@ def submit_config():
     else:
         partition_strategy = "partitioning"
 
+    # Extract advanced (optional) UI settings
     advanced_settings = AdvancedSettings(
         best_solution=form.get("best_solution", ""),
         nr_of_runs=int(form.get("nr_of_runs") or -1),
@@ -47,6 +58,7 @@ def submit_config():
         tree_layout="tree_layout" in form
     )
 
+    # Extract core config (partitioning and clustering settings)
     configData = ConfigData(
         problemType=problem_type,
         objectiveType=objective_type,
@@ -66,14 +78,19 @@ def submit_config():
         cDistance=form.get("continuous_distance_metric", "euclidean")
     )
 
+    # Save both objects into session to be reused
     session["config_data"] = configData.toDict()
     session["advanced_settings"] = advanced_settings.to_dict()
     return jsonify({"status": "ok"})
 
+
+# Route: Load default layout-based graph visualization
 @app.route("/display_graph")
 def display_graph():
     return send_from_directory("static","graph_fr.html")
 
+
+# === Route: Load specific graph layout by name ===
 @app.route("/display_graph/<layout>")
 def display_graph_layout(layout):
     if layout == "fr":
@@ -83,6 +100,8 @@ def display_graph_layout(layout):
     else:
         return "Unknown layout", 400
 
+
+# Route: Main landing page
 @app.route("/", methods=['GET', 'POST'])
 def index():
     return render_template("index.html")

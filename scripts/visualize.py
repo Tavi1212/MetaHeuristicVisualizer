@@ -2,9 +2,9 @@ import json
 import networkx as nx
 import scripts.utils as utils
 from collections import Counter
-from scripts.utils import add_best
+from collections import defaultdict
 from scripts.structures import ConfigData, AdvancedSettings
-from scripts.utils import normalize, adjust_color_lightness, add_best
+from scripts.utils import normalize, adjust_color_lightness
 from pyvis.network import Network
 import matplotlib.pyplot as plt
 from scripts.utils import adjust_color_lightness, normalize
@@ -12,40 +12,34 @@ from scripts.utils import adjust_color_lightness, normalize
 
 # Takes a graph and colors it based on node types:
 # Start:        Yellow
-# End:          Red
+# End:          Grey
 # Intermediate: Given as argument
-# Best:         Either yellow, red or given as argument depending on node type
+# Best:         Golden
 def tag_graph_origin(G, origin_color):
     for node in G.nodes:
         node_type = G.nodes[node].get("type", "intermediate")
-        is_best = G.nodes[node].get("best", False)
 
-        if node_type == "start":
-            G.nodes[node]["origin_color"] = "#f5e642"
-            G.nodes[node]["shape"] = "star" if is_best else "dot"
-        elif node_type == "end":
-            G.nodes[node]["origin_color"] = "#f54242"
-            G.nodes[node]["shape"] = "star" if is_best else "dot"
-        else:
-            G.nodes[node]["origin_color"] = origin_color
-            G.nodes[node]["shape"] = "star" if is_best else "dot"
-
-
-def shape_style(shape):
-    if shape == "dot":
-        return "border-radius: 50%; width: 12px; height: 12px;"
-    elif shape == "square":
-        return "border-radius: 0%; width: 12px; height: 12px;"
-    elif shape == "diamond":
-        return "width: 12px; height: 12px; transform: rotate(45deg); border-radius: 0%;"
-    return "width: 12px; height: 12px;"
+        match node_type:
+            case "start":
+                G.nodes[node]["origin_color"] = "#f5e642"  # yellow
+                G.nodes[node]["shape"] = "dot"
+            case "end":
+                G.nodes[node]["origin_color"] = "#575757"  # grey
+                G.nodes[node]["shape"] = "diamond"
+            case "best":
+                G.nodes[node]["origin_color"] = "#f5b111"  # golden
+                G.nodes[node]["shape"] = "star"
+            case _:
+                G.nodes[node]["origin_color"] = origin_color  # custom
+                G.nodes[node]["shape"] = "dot"
 
 
+# Adds a legend box to the HTML graph showing color mappings and optionally a "merged nodes" entry
 def add_legend(html_file, color_name_map, include_gray):
     # Static entries for known types
     static_legend = {
         "#f5e642": ("Start Node", "square"),
-        "#f54242": ("End Node", "diamond")
+        "#575757": ("End Node", "diamond")
     }
 
     if include_gray:
@@ -108,7 +102,9 @@ def add_legend(html_file, color_name_map, include_gray):
         f.write(html)
 
 
+# Adds layout and graph statistics (nodes, edges, components) to the HTML visualization
 def add_info(html_file, layout, num_nodes, num_edges, num_components):
+    # Build the HTML snippet with graph statistics
     stats_html = f"""
     <div style="position: absolute; bottom: 20px; right: 20px; 
                 font-family: sans-serif; font-size: 13px; color: #444;
@@ -120,42 +116,38 @@ def add_info(html_file, layout, num_nodes, num_edges, num_components):
     </div>
     """
 
+    # Read the existing HTML content
     with open(html_file, "r", encoding="utf-8") as f:
         html = f.read()
 
+    # Inject the stats before the closing </body> tag
     html = html.replace("</body>", stats_html + "\n</body>")
 
+    # Write the updated content back to the file
     with open(html_file, "w", encoding="utf-8") as f:
         f.write(html)
 
 
-def add_layout_flag(html_file, layout_name):
-    with open(html_file, "r", encoding="utf-8") as f:
-        html = f.read()
-
-    # Embed a layout flag as a JS-accessible element
-    layout_div = f'<div id="layout-flag" data-layout="{layout_name}" style="display:none;"></div>'
-
-    html = html.replace("</body>", layout_div + "\n</body>")
-
-    with open(html_file, "w", encoding="utf-8") as f:
-        f.write(html)
-
-
+# Applies a hierarchical tree layout to the graph visualization
+# 'direction' can be "UD" (top-down), "LR" (left-right), etc.
 def apply_tree_layout(net: Network, direction: str = "UD"):
     layout_options = {
         "layout": {
             "hierarchical": {
                 "enabled": True,
                 "direction": direction,
-                "sortMethod": "hubsize"
+                "sortMethod": "hubsize",
+                "nodeSpacing": 200,
+                "treeSpacing": 300,
+                "levelSeparation": 100
             }
         },
         "edges": {
-            "smooth": True
+            "smooth": True  # Make edges appear smooth
         }
     }
 
+    # Apply layout settings to the network
     net.set_options(json.dumps(layout_options))
 
 
@@ -178,10 +170,48 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     net = Network(height="100%", width="100%", directed=True)
 
     if not advanced.tree_layout:
-        if layout == "kk":
-            net.barnes_hut(gravity=-20000, spring_length=300, spring_strength=0.01)
-        elif layout == "fr":
-            net.force_atlas_2based(gravity=-50, central_gravity=0.01)
+        if layout == "fr":
+            net.set_options("""
+                {
+                  "physics": {
+                    "forceAtlas2Based": {
+                      "gravitationalConstant": -50,
+                      "centralGravity": 0.01,
+                      "springLength": 50,
+                      "springConstant": 0.5,
+                      "damping": 0.7,
+                      "avoidOverlap": 0
+                    },
+                    "minVelocity": 0.75,
+                    "solver": "forceAtlas2Based",
+                    "timestep": 0.35,
+                    "stabilization": {
+                        "enabled": true,
+                        "iterations": 100,
+                        "updateInterval": 100,
+                        "onlyDynamicEdges": false,
+                        "fit": true
+                  }
+                  }
+                }
+                """)
+
+        elif layout == "kk":
+            net.set_options("""
+                {
+                  "physics": {
+                    "barnesHut": {
+                      "gravitationalConstant": -20000,
+                      "centralGravity": 1.0,
+                      "springLength": 100,
+                      "springConstant": 0.4,
+                      "damping": 0.8
+                    },
+                    "minVelocity": 0.75,
+                    "solver": "barnesHut"
+                  }
+                }
+                """)
 
     shape_map = {
         "start": "square",
@@ -216,7 +246,8 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
         shape = shape_map.get(node_type, "dot")
         fitness = attrs.get("fitness", 0)
         count = attrs.get("count", 1)
-        title = f"ID: {node}\nFitness: {fitness:.4f}\nCount: {count}"
+        fitness_str = f"{fitness:.4f}" if fitness is not None else "N/A"
+        title = f"ID: {node}\nFitness: {fitness_str}\nCount: {count}"
 
         scaled_size = normalize(count, min_count, max_count, raw_min_size * vertex_scale, raw_max_size * vertex_scale)
         size = min(scaled_size, max_node_size)
@@ -229,14 +260,14 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
                 color = "#787878"
                 has_merged_nodes = True
             else:
-                lightness = normalize(fitness, max_fit, min_fit, 30, 90) if minmax == "minimization" else normalize(
-                    fitness, min_fit, max_fit, 30, 90)
+                lightness = normalize(fitness, min_fit, max_fit, 30, 90) if minmax == "minimization" else normalize(
+                    fitness, max_fit, min_fit, 30, 90)
                 color = adjust_color_lightness(base_color, lightness)
 
         net.add_node(node, label=" ", title=title, color=color, shape=shape, size=size)
 
     for u, v, attrs in merged.edges(data=True):
-        net.add_edge(u, v, color=attrs.get("color", "black"), value=attrs.get("weight", 1) * advanced.arrow_size)
+        net.add_edge(u, v, color=attrs.get("color", "black"), value=15)
 
     if advanced.tree_layout:
         apply_tree_layout(net, direction="UD")
@@ -250,18 +281,21 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     add_info(output_file, layout, len(merged.nodes), len(merged.edges), num_components)
 
 
-def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_entries=None, objective_type="minimization"):
+def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_entries=None,
+                       objective_type="minimization", advanced=None, layout="fr"):
     net = Network(height="100%", width="100%", notebook=False)
 
     shape_map = {
         "start": "square",
         "end": "diamond",
-        "intermediate": "dot"
+        "intermediate": "dot",
+        "best": "star"
     }
 
     fixed_colors = {
         "start": "#f5e642",
-        "end": "#f54242"
+        "end": "#f54242",
+        "best": "#f5b111"
     }
 
     # Normalize cluster sizes to [20, 80]
@@ -281,11 +315,15 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
     global_max_fitness = max(fitness_dict.values())
     global_range = global_max_fitness - global_min_fitness or 1e-9
 
+    cluster_levels = {}
+    if advanced and advanced.tree_layout:
+        cluster_levels = utils.assign_cluster_levels(G, final_clusters)
+
     cluster_nodes = []
     for i, cluster in enumerate(final_clusters):
         size = normalize_size(len(cluster))
 
-        type_counts = {"start": 0, "end": 0, "intermediate": 0}
+        type_counts = defaultdict(int)
         color_counts = []
 
         for n in cluster:
@@ -295,7 +333,14 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
             color_counts.append(color)
 
         dominant_type = max(type_counts, key=type_counts.get)
-        shape = shape_map[dominant_type]
+        if any(G.nodes[n].get("type") == "best" for n in cluster):
+            shape = "star"
+        else:
+            shape = shape_map[dominant_type]
+
+        fitness_values = [G.nodes[n]["fitness"] for n in cluster if "fitness" in G.nodes[n]]
+        min_fitness = min(fitness_values)
+        max_fitness = max(fitness_values)
 
         # Determine color
         if dominant_type in fixed_colors:
@@ -308,20 +353,17 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
                     lightness = 60  # default mid-lightness if no variation
                 else:
                     if objective_type == "minimization":
-                        lightness = normalize(max_fitness, global_min_fitness, global_max_fitness, 90, 30)
-                    else:
                         lightness = normalize(max_fitness, global_min_fitness, global_max_fitness, 30, 90)
+                    else:
+                        lightness = normalize(max_fitness, global_min_fitness, global_max_fitness, 90, 30)
                 dominant_color = adjust_color_lightness(base_color, lightness)
             else:
                 dominant_color = base_color
 
-        fitness_values = [G.nodes[n]["fitness"] for n in cluster if "fitness" in G.nodes[n]]
-        min_fitness = min(fitness_values)
-        max_fitness = max(fitness_values)
         volume = (max_fitness - min_fitness) / global_range * 100
         percentage = (len(cluster) / total_nodes) * 100
 
-        label = f"Cluster {i + 1}"
+        label = f"{len(cluster)} [{min_fitness:.1f}-{max_fitness:.1f}]"
         title = (
             f"Cluster {i + 1}\n"
             f"Size: {len(cluster)} ({percentage:.2f}%)\n"
@@ -336,7 +378,8 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
             size=size,
             color=dominant_color,
             title=title,
-            shape=shape
+            shape=shape,
+            level=cluster_levels.get(i, 0) if advanced and advanced.tree_layout else None
         )
         cluster_nodes.append((i, set(cluster)))
 
@@ -358,5 +401,3 @@ def visualize_clusters(final_clusters, G, output_file="stn_graph.html", legend_e
         add_legend(output_file, legend_entries, include_gray=has_merged_nodes)
 
     num_components = nx.number_weakly_connected_components(G)
-
-
