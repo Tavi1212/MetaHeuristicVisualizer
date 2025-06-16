@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request, jsonify, session, render_template, send_from_directory, redirect, url_for, send_file
 from scripts import config as cnf
-from scripts.structures import AdvancedSettings
+from scripts.structures import AdvancedOptions
 from scripts.structures import ConfigData
 
 # Initialize Flask app and secret key for session management
@@ -50,7 +50,7 @@ def submit_config():
         partition_strategy = "partitioning"
 
     # Extract advanced (optional) UI settings
-    advanced_settings = AdvancedSettings(
+    advanced_settings = AdvancedOptions(
         best_solution=form.get("best_solution", ""),
         nr_of_runs=int(form.get("nr_of_runs") or -1),
         vertex_size=float(form.get("vertex_size") or -1),
@@ -90,7 +90,7 @@ def display_graph():
     return send_from_directory("static","graph_fr.html")
 
 
-# === Route: Load specific graph layout by name ===
+# Route: Load specific graph layout by name
 @app.route("/display_graph/<layout>")
 def display_graph_layout(layout):
     if layout == "fr":

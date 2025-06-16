@@ -5,13 +5,13 @@ import networkx as nx
 from collections import Counter
 from flatbuffers.flexbuffers import String
 
-
+# Normalize a value using scaled bounds
 def normalize(value, min_val, max_val, scaled_min=10, scaled_max=50):
     if min_val == max_val:
         return (scaled_min + scaled_max) / 2
     return scaled_min + (value - min_val) / (max_val - min_val) * (scaled_max - scaled_min)
 
-
+# Adjust color brightness
 def adjust_color_lightness(hex_color, lightness_percent):
     lightness_percent = max(30, min(90, lightness_percent))
 
@@ -25,7 +25,7 @@ def adjust_color_lightness(hex_color, lightness_percent):
 
     return "#{:02x}{:02x}{:02x}".format(int(r * 255), int(g * 255), int(b * 255))
 
-
+# Compute shannon entropy for a binary vector
 def shannon_entropy_vector(vec):
     if not isinstance(vec, (list, tuple)):
         vec = list(vec)
@@ -36,7 +36,7 @@ def shannon_entropy_vector(vec):
     probabilities = [count / total for count in counts.values()]
     return -sum(p * math.log2(p) for p in probabilities if p > 0)
 
-
+# Remove a node from a graph and tie the parents
 def remove_node_between_two(G, node):
     if node not in G:
         return
@@ -51,7 +51,7 @@ def remove_node_between_two(G, node):
 
     G.remove_node(node)
 
-
+# Parse a string representation of a vector into a nested list of values
 def parse_vectors_string(s, mode='auto'):
     def hex_to_int32(h):
         val = int(h, 16)
@@ -105,7 +105,7 @@ def parse_vectors_string(s, mode='auto'):
     else:
         raise ValueError(f"Unknown parse mode: {mode}")
 
-
+# Parse discrete solution based on it's type
 def parse_discrete_solutions(s, mode='auto'):
     if mode == 'binary':
         if not all(c in '01' for c in s):
@@ -144,7 +144,7 @@ def parse_discrete_solutions(s, mode='auto'):
     else:
         raise ValueError(f"Unknown parse mode: {mode}")
 
-
+# Parse a string as a real-valued solution vector
 def parse_continuous_solution(s):
     try:
         parsed = ast.literal_eval(s)
@@ -161,12 +161,13 @@ def parse_continuous_solution(s):
     except Exception:
         raise ValueError(f"Failed to parse as continuous solution: {s}")
 
-
+# Calculate the hamming distance between two binary solutions
 def hamming_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Solutions need to be the same length")
     return sum(a != b for a, b in zip(v1, v2))
 
+# Calculate euclidian distance between two solutions
 def euclidean_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Vectors must be of equal length")
@@ -175,6 +176,7 @@ def euclidean_distance(v1, v2):
     except ValueError as e:
         raise TypeError("Euclidean distance requires numeric vectors") from e
 
+# Calculate manhattan distance between two solutions
 def manhattan_distance(v1, v2):
     if len(v1) != len(v2):
         raise ValueError("Vectors must be of equal length")
@@ -183,6 +185,7 @@ def manhattan_distance(v1, v2):
     except (ValueError, TypeError):
         raise TypeError("Manhattan distance requires numeric inputs")
 
+# Get the distance automatically based on extra parameters
 def get_valid_distance_fn(distance_type: str, solution_type: str):
     if distance_type == "hamming":
         return hamming_distance
@@ -197,6 +200,7 @@ def get_valid_distance_fn(distance_type: str, solution_type: str):
     else:
         raise ValueError(f"Unsupported distance type: {distance_type}")
 
+# Calculates the distance given as attribute between two solutions
 def compute_distance(sol1, sol2, distance_fn):
     if len(sol1) != len(sol2):
         raise ValueError("Vectors must be of equal length")

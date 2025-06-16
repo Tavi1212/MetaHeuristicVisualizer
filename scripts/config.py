@@ -1,5 +1,5 @@
 from werkzeug.utils import secure_filename
-from scripts.structures import ConfigData, AdvancedSettings
+from scripts.structures import ConfigData, AdvancedOptions
 from flask import session, request
 import networkx as nx
 import scripts.create as create
@@ -20,12 +20,12 @@ def get_config_from_session():
 
 
 # Retrieves advanced settings from the session
-# Converts them into an AdvancedSettings object
+# Converts them into an AdvancedOptions object
 def get_advanced_from_session():
     advanced_dict = session.get("advanced_settings")
     if not advanced_dict:
         raise ValueError("Advanced settings missing from session.")
-    return AdvancedSettings.from_dictionary(advanced_dict)
+    return AdvancedOptions.from_dictionary(advanced_dict)
 
 
 # Extracts uploaded algorithm metadata and files from the request
@@ -69,7 +69,7 @@ def get_upload_file_data(request, upload_dir="uploads"):
 # Returns deserialized config objects and file metadata
 def load_config_and_files():
     try:
-        # Load form data into ConfigData and AdvancedSettings objects
+        # Load form data into ConfigData and AdvancedOptions objects
         config = get_config_from_session()
         advanced = get_advanced_from_session()
         files_data = get_upload_file_data(request)
@@ -119,14 +119,6 @@ def validate_best_solution_format(best_str: str, config: ConfigData, sample_solu
             raise ValueError(f"Unknown problem type: {config.problemType}")
     except Exception as e:
         raise ValueError(f"Invalid best solution format: {e}")
-
-
-
-def validate_config_data(config: ConfigData, advanced: AdvancedSettings) -> None:
-    if config.cMinBound >= config.cMaxBound:
-        raise ValueError("Minimum bound must be less than maximum bound.")
-    if abs(config.cMinBound) > 1e6 or abs(config.cMaxBound) > 1e6:
-        raise ValueError("Bounds must be within [-1e6, 1e6].")
 
 
 

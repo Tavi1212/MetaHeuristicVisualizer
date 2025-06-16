@@ -3,7 +3,7 @@ import networkx as nx
 import scripts.utils as utils
 from collections import Counter
 from collections import defaultdict
-from scripts.structures import ConfigData, AdvancedSettings
+from scripts.structures import ConfigData, AdvancedOptions
 from scripts.utils import normalize, adjust_color_lightness
 from pyvis.network import Network
 import matplotlib.pyplot as plt
@@ -172,46 +172,55 @@ def visualize_stn(graphs: list, advanced, config, output_file="stn_graph.html", 
     if not advanced.tree_layout:
         if layout == "fr":
             net.set_options("""
-                {
-                  "physics": {
-                    "forceAtlas2Based": {
-                      "gravitationalConstant": -50,
-                      "centralGravity": 0.01,
-                      "springLength": 50,
-                      "springConstant": 0.5,
-                      "damping": 0.7,
-                      "avoidOverlap": 0
-                    },
-                    "minVelocity": 0.75,
-                    "solver": "forceAtlas2Based",
-                    "timestep": 0.35,
-                    "stabilization": {
-                        "enabled": true,
-                        "iterations": 100,
-                        "updateInterval": 100,
-                        "onlyDynamicEdges": false,
-                        "fit": true
-                  }
-                  }
+            var options = {
+              "physics": {
+                "enabled": true,
+                "solver": "forceAtlas2Based",
+                "forceAtlas2Based": {
+                  "gravitationalConstant": -50,
+                  "centralGravity": 0.01,
+                  "springLength": 75,
+                  "springConstant": 0.5,
+                  "damping": 0.7,
+                  "avoidOverlap": 0
+                },
+                "minVelocity": 0.01,
+                "timestep": 0.35,
+                "stabilization": {
+                  "enabled": true,
+                  "iterations": 1000,
+                  "updateInterval": 25,
+                  "fit": true
                 }
-                """)
+              }
+            }
+            """)
 
         elif layout == "kk":
             net.set_options("""
-                {
-                  "physics": {
-                    "barnesHut": {
-                      "gravitationalConstant": -20000,
-                      "centralGravity": 1.0,
-                      "springLength": 100,
-                      "springConstant": 0.4,
-                      "damping": 0.8
-                    },
-                    "minVelocity": 0.75,
-                    "solver": "barnesHut"
-                  }
+            var options = {
+              "physics": {
+                "enabled": true,
+                "solver": "barnesHut",
+                "barnesHut": {
+                  "gravitationalConstant": -15000,
+                  "centralGravity": 0.5,
+                  "springLength": 75,
+                  "springConstant": 0.5,
+                  "damping": 0.09,
+                  "avoidOverlap": 0
+                },
+                "minVelocity": 0.01,
+                "timestep": 0.35,
+                "stabilization": {
+                  "enabled": true,
+                  "iterations": 1000,
+                  "updateInterval": 25,
+                  "fit": true
                 }
-                """)
+              }
+            }
+            """)
 
     shape_map = {
         "start": "square",

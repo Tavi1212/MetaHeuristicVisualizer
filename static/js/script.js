@@ -110,7 +110,7 @@ continuousClusteringBtn.addEventListener("change", () => {
     }
 });
 
-function displayAdvancedSettings() {
+function displayAdvancedOptions() {
     console.log("advanced setting slider");
 
     let optionsTab = document.createElement("div");
@@ -305,15 +305,15 @@ function submitAlgorithmData() {
                 const iframe = document.getElementById("graph-frame");
                 iframe.src = "/display_graph/fr";
 
-                // // Reset the config form
-                // document.getElementById("problem-config-form").reset();
-                //
-                // // Clear algorithm list and add a fresh one
-                // const algoContainer = document.getElementById("algorithm_list_container");
-                // algoContainer.innerHTML = "";
-                // addAlgorithm();
+                // ✅ Reset the config form
+                document.getElementById("problem-config-form").reset();
 
-                // Reset strategy radio and UI
+                // ✅ Clear algorithm list and add a fresh one
+                const algoContainer = document.getElementById("algorithm_list_container");
+                algoContainer.innerHTML = "";
+                addAlgorithm();
+
+                // ✅ Reset strategy radio and UI
                 discreteBtn.checked = true;
                 discreteBtn.dispatchEvent(new Event("change"));
             })
@@ -365,7 +365,7 @@ function switchLayout(layout) {
     if (treeLayoutCheckbox && treeLayoutCheckbox.checked) {
         alert("Tree layout is already applied. Please disable it to use other layouts.");
         // Optionally reset selection
-        document.getElementById(layout === 'fr' ? 'kk-layout' : 'fr-layout').checked = true;
+        document.getElementById(layout === 'fr' ? 'BarnesHut' : 'ForcedAtlas').checked = true;
         return;
     }
 

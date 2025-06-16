@@ -2,7 +2,7 @@ from typing import final
 import networkx as nx
 from pyvis.network import Network
 import matplotlib.pyplot as plt
-from scripts.structures import ConfigData, AdvancedSettings
+from scripts.structures import ConfigData, AdvancedOptions
 from scripts.partition import discrete_clustering
 from scripts.create import create_stn
 from matplotlib import colormaps
@@ -99,7 +99,7 @@ config = ConfigData(
     cDistance="euclidean"
 )
 
-advanced = AdvancedSettings(
+advanced = AdvancedOptions(
     best_solution="",
     nr_of_runs=-1,
     vertex_size=20,

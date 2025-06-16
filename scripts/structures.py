@@ -34,7 +34,7 @@ class ConfigData():
         self.cClusterSize      = cClusterSize
         self.cVolumeSize       = cVolumeSize
         self.cDistance         = cDistance
-        self.advanced = advanced if advanced else AdvancedSettings()
+        self.advanced = advanced if advanced else AdvancedOptions()
 
     def toDict(self):
         return {
@@ -73,10 +73,10 @@ class ConfigData():
             cClusterSize=d.get("cClusterSize", 50),
             cVolumeSize=d.get("cVolumeSize", 50),
             cDistance=d.get("cDistance", "euclidean"),
-            advanced=AdvancedSettings.from_dictionary(adv)
+            advanced=AdvancedOptions.from_dictionary(adv)
         )
 
-class AdvancedSettings():
+class AdvancedOptions():
     def __init__(self,
                  best_solution = "",
                  nr_of_runs    = -1,

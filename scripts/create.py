@@ -62,6 +62,7 @@ def create_stn(infile, nr_of_runs, best_solution, objective_type):
 
         G.nodes[node]["fitness"] = fitness_avg.get(node, None)
 
+    #Assign best solution
     if best_solution:
         if best_solution in G.nodes:
             G.nodes[best_solution]["type"] = "best"
@@ -71,16 +72,19 @@ def create_stn(infile, nr_of_runs, best_solution, objective_type):
             G.nodes[best_solution]["count"] = 1
             G.nodes[best_solution]["fitness"] = None
 
+    #Determine how to place the best solution
     if objective_type == "minimization":
-        best_node = min(
-            ((n, d["fitness"]) for n, d in G.nodes(data=True) if d.get("fitness") is not None),
-            key=lambda x: x[1]
-        )[0]
+        best_fitness = min(
+            d["fitness"] for n, d in G.nodes(data=True) if d.get("fitness") is not None
+        )
     else:
-        best_node = max(
-            ((n, d["fitness"]) for n, d in G.nodes(data=True) if d.get("fitness") is not None),
-            key=lambda x: x[1]
-        )[0]
-    G.nodes[best_node]["type"] = "best"
+        best_fitness = max(
+            d["fitness"] for n, d in G.nodes(data=True) if d.get("fitness") is not None
+        )
+
+    #Assign best solution
+    for n, d in G.nodes(data=True):
+        if d.get("fitness") == best_fitness:
+            G.nodes[n]["type"] = "best"
 
     return G
