@@ -234,7 +234,7 @@ function submitAllData() {
     const selectedStrategy = document.querySelector('input[name="strategy"]:checked');
     if (selectedStrategy) {
         configData.set("partitionStrategy", selectedStrategy.value);
-        console.log("📤 Partition strategy set to:", selectedStrategy.value);
+        console.log("Partition strategy set to:", selectedStrategy.value);
     }
 
     fetch("/submit", {
@@ -305,15 +305,15 @@ function submitAlgorithmData() {
                 const iframe = document.getElementById("graph-frame");
                 iframe.src = "/display_graph/fr";
 
-                // ✅ Reset the config form
+                // Reset the config form
                 document.getElementById("problem-config-form").reset();
 
-                // ✅ Clear algorithm list and add a fresh one
+                // Clear algorithm list and add a fresh one
                 const algoContainer = document.getElementById("algorithm_list_container");
                 algoContainer.innerHTML = "";
                 addAlgorithm();
 
-                // ✅ Reset strategy radio and UI
+                // Reset strategy radio and UI
                 discreteBtn.checked = true;
                 discreteBtn.dispatchEvent(new Event("change"));
             })
